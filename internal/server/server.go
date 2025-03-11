@@ -29,6 +29,7 @@ import (
 	"github.com/okdp/spark-history-web-proxy/internal/controllers"
 	"github.com/okdp/spark-history-web-proxy/internal/k8s/informers"
 	log "github.com/okdp/spark-history-web-proxy/internal/logging"
+	"github.com/okdp/spark-history-web-proxy/internal/security"
 )
 
 func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {
@@ -51,6 +52,9 @@ func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {
 	r := gin.New()
 	r.Use(log.Logger()...)
 	r.Use(gin.Recovery())
+
+	// Apply http security (cors, headers, etc)
+	r.Use(security.HTTPSecurity(config.Security)...)
 
 	// Spark UI
 	sparkui := controllers.NewSparkUIController(config)
