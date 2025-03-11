@@ -52,6 +52,11 @@ func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {
 	r.Use(log.Logger()...)
 	r.Use(gin.Recovery())
 
+	// Spark UI
+	sparkui := controllers.NewSparkUIController(config)
+	// Spark UI Handler
+	r.Any(fmt.Sprintf("%s/:appID/*path", config.Spark.UI.ProxyBase), sparkui.HandleLiveApp)
+
 	r.GET(constants.HealthzURI, controllers.Healthz)
 	r.GET(constants.ReadinessURI, controllers.Readiness)
 
