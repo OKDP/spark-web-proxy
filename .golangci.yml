@@ -1,0 +1,33 @@
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    # Code Formatting & Imports
+    - goimports
+    - gofmt
+    # Static Code Analysis
+    - govet
+    - staticcheck
+    - gosimple
+    - unused
+    # Error Handling
+    - errcheck
+    # Code Optimization
+    - ineffassign
+    - unconvert
+    - prealloc
+    # Code Quality
+    - gocritic
+    - revive
+    - goconst
+    # Code Complexity
+    - cyclop
+  fast: false
+
+issues:
+  max-same-issues: 5
+  max-issues-per-linter: 10
+  exclude-use-default: true
+  exclude-dirs:
+    - ^api/
