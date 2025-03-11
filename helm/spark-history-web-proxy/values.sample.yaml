@@ -1,0 +1,25 @@
+image:
+  repository: spark-history-web-proxy
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "0.1.0-snapshot"
+
+configuration:
+  spark:
+    history:
+      service: spark-history-server.spark.svc.cluster.local
+    ui:
+      proxyBase: /sparkui
+    jobNamespaces:
+    - spark
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: spark-history-web-proxy.okdp.sandbox
+      paths:
+        - path: /
+          pathType: Prefix
+
