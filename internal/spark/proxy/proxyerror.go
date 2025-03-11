@@ -25,7 +25,7 @@ import (
 
 func NewErrorHandler() func(http.ResponseWriter, *http.Request, error) {
 	return func(rw http.ResponseWriter, req *http.Request, err error) {
-		log.Error("Proxy Error for: %+v", err)
+		log.Error("An error was occured when accessing url: %s, \ndetails: %+v", req.URL.Path, err)
 		http.Error(rw, fmt.Sprintf("Proxy Error: %s", err.Error()), http.StatusBadGateway)
 	}
 }

@@ -24,5 +24,4 @@ import (
 type ReverseProxyHandler interface {
 	ModifyRequest(upstreamURL *url.URL) func(*http.Request)
 	ModifyResponse() func(*http.Response) error
-	ErrorHandler(w http.ResponseWriter, r *http.Request, err error)
 }

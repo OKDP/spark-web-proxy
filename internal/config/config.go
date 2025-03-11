@@ -18,8 +18,8 @@ package config
 
 import (
 	"fmt"
-	"sync"
 	"os"
+	"sync"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -120,7 +120,7 @@ func GetAppConfig() *ApplicationConfig {
 	return instance
 }
 
-func printConfig (fileConfigPath string){
+func printConfig(fileConfigPath string) {
 	content, err := os.ReadFile(fileConfigPath)
 	if err != nil {
 		panic(err)
@@ -129,6 +129,3 @@ func printConfig (fileConfigPath string){
 	fmt.Println(string(content))
 	fmt.Println()
 }
-
-
-

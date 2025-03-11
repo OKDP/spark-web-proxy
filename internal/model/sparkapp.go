@@ -21,7 +21,7 @@ import (
 )
 
 type SparkApp struct {
-	InternalUrl string
+	InternalURL string
 	Namespace   string
 	Status      string
 }
@@ -62,7 +62,7 @@ func GetSparkApp(appID string) (SparkApp, bool) {
 // ListSparkApps retrieves all SparkApps from the map
 func ListSparkApps() []SparkApp {
 	var apps []SparkApp
-	SparkApps.Instances.Range(func(key, value interface{}) bool {
+	SparkApps.Instances.Range(func(_, value interface{}) bool {
 		if app, ok := value.(SparkApp); ok {
 			apps = append(apps, app)
 		}

@@ -77,11 +77,16 @@ func (i SparkAppInformer) WatchNamespaceSparkApps(clientset *kubernetes.Clientse
 			podInformer := factory.Core().V1().Pods().Informer()
 
 			// Register event handlers
-			podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+			registration, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 				AddFunc:    i.sparkAppAddedOrUpdated,
-				UpdateFunc: func(oldObj, newObj interface{}) { i.sparkAppAddedOrUpdated(newObj) },
+				UpdateFunc: func(_, newObj interface{}) { i.sparkAppAddedOrUpdated(newObj) },
 				DeleteFunc: i.sparkAppDeleted,
 			})
+
+			if err != nil {
+				log.Error("Failed to add event handler: %v", err)
+				return
+			}
 
 			stopCh := make(chan struct{})
 			defer close(stopCh)
@@ -90,6 +95,9 @@ func (i SparkAppInformer) WatchNamespaceSparkApps(clientset *kubernetes.Clientse
 			factory.Start(stopCh)
 			factory.WaitForCacheSync(stopCh)
 			<-stopCh
+
+			_ = podInformer.RemoveEventHandler(registration)
+
 		}()
 	}
 }
@@ -106,13 +114,13 @@ func (i SparkAppInformer) sparkAppAddedOrUpdated(obj interface{}) {
 	}
 
 	sparkJob := model.SparkApp{
-		InternalUrl: fmt.Sprintf("http://%s:%d", pod.Status.PodIP, i.ui.Port),
+		InternalURL: fmt.Sprintf("http://%s:%d", pod.Status.PodIP, i.ui.Port),
 		Namespace:   pod.Namespace,
 		Status:      string(pod.Status.Phase),
 	}
 
 	model.AddOrUpdateSparkApp(appID, sparkJob)
-	log.Info("Spark app : %s/%s (%s) -> %s", sparkJob.Namespace, appID, sparkJob.Status, sparkJob.InternalUrl)
+	log.Info("Spark app : %s/%s (%s) -> %s", sparkJob.Namespace, appID, sparkJob.Status, sparkJob.InternalURL)
 }
 
 func (i SparkAppInformer) sparkAppDeleted(obj interface{}) {
