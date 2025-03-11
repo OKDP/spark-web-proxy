@@ -21,12 +21,30 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	"github.com/okdp/spark-history-web-proxy/internal/config"
+	"github.com/okdp/spark-history-web-proxy/internal/constants"
+	"github.com/okdp/spark-history-web-proxy/internal/controllers"
+	"github.com/okdp/spark-history-web-proxy/internal/k8s/informers"
 	log "github.com/okdp/spark-history-web-proxy/internal/logging"
 )
 
 func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {
+	restConfig, err := rest.InClusterConfig()
+	if err != nil {
+		log.Fatal("Failed to load Kubernetes in-cluster config: %v", err)
+	}
+
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		log.Fatal("Failed to create Kubernetes client: %v", err)
+	}
+
+	informer := informers.NewSparkAppInformer(config)
+
+	go informer.WatchSparkApps(clientset)
 
 	// Set up Gin router
 	gin.SetMode(config.Proxy.Mode)
@@ -34,6 +52,8 @@ func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {
 	r.Use(log.Logger()...)
 	r.Use(gin.Recovery())
 
+	r.GET(constants.HealthzURI, controllers.Healthz)
+	r.GET(constants.ReadinessURI, controllers.Readiness)
 
 	proxy := &http.Server{
 		Handler: r,
