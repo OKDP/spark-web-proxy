@@ -54,8 +54,18 @@ func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {
 
 	// Spark UI
 	sparkui := controllers.NewSparkUIController(config)
+	sparkhistory := controllers.NewSparkkHistoryController(config)
 	// Spark UI Handler
 	r.Any(fmt.Sprintf("%s/:appID/*path", config.Spark.UI.ProxyBase), sparkui.HandleLiveApp)
+	// Spark history Handlers
+	r.Any("/history/:appID/*path", sparkhistory.HandleHistoryApp)
+	r.Any("/static/*path", sparkhistory.HandleDefault)
+	r.Any("/api/v1/applications", sparkhistory.HandleDefault)
+	r.Any("/api/v1/applications/*path", sparkhistory.HandleDefault)
+	r.Any("/history/", sparkhistory.HandleDefault)
+	r.Any("/home/", sparkhistory.HandleDefault)
+	r.Any("/jobs/", sparkhistory.HandleDefault)
+	r.Any("/", sparkhistory.HandleDefault)
 
 	r.GET(constants.HealthzURI, controllers.Healthz)
 	r.GET(constants.ReadinessURI, controllers.Readiness)
