@@ -17,7 +17,10 @@
 package informers
 
 import (
+	"context"
 	"fmt"
+	"os/signal"
+	"syscall"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -47,9 +50,6 @@ func (i SparkAppInformer) WatchSparkApps(clientset *kubernetes.Clientset) {
 	namespaces := i.namespaces
 	if len(namespaces) == 0 {
 		namespaces = []string{metav1.NamespaceAll}
-		log.Info("Running kubernetes informer on all namespaces")
-	} else {
-		log.Info("Running kubernetes informer on the following namespaces: %s", namespaces)
 	}
 
 	for _, ns := range namespaces {
@@ -58,48 +58,45 @@ func (i SparkAppInformer) WatchSparkApps(clientset *kubernetes.Clientset) {
 }
 
 func (i SparkAppInformer) WatchNamespaceSparkApps(clientset *kubernetes.Clientset, namespace string) {
-	for {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					log.Error("Spark app informer on namespace '%s' failed, restarting... \n %+v", namespace, r)
-					time.Sleep(5 * time.Second)
-				}
-			}()
 
-			factory := informers.NewSharedInformerFactoryWithOptions(clientset, 5*time.Minute,
-				informers.WithNamespace(namespace),
-				informers.WithTweakListOptions(func(opts *metav1.ListOptions) {
-					opts.LabelSelector = "spark-role=driver"
-				}),
-			)
+	log.Info("Running spark app informer on the following namespaces: %s", func() string {
+		if namespace == metav1.NamespaceAll {
+			return "all"
+		}
+		return namespace
+	}())
 
-			podInformer := factory.Core().V1().Pods().Informer()
+	factory := informers.NewSharedInformerFactoryWithOptions(clientset, 5*time.Minute,
+		informers.WithNamespace(namespace),
+		informers.WithTweakListOptions(func(opts *metav1.ListOptions) {
+			opts.LabelSelector = "spark-role=driver"
+		}),
+	)
 
-			// Register event handlers
-			registration, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-				AddFunc:    i.sparkAppAddedOrUpdated,
-				UpdateFunc: func(_, newObj interface{}) { i.sparkAppAddedOrUpdated(newObj) },
-				DeleteFunc: i.sparkAppDeleted,
-			})
+	podInformer := factory.Core().V1().Pods().Informer()
 
-			if err != nil {
-				log.Error("Failed to add event handler: %v", err)
-				return
-			}
+	// Register event handlers
+	registration, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    i.sparkAppAddedOrUpdated,
+		UpdateFunc: func(_, newObj interface{}) { i.sparkAppAddedOrUpdated(newObj) },
+		DeleteFunc: i.sparkAppDeleted,
+	})
 
-			stopCh := make(chan struct{})
-			defer close(stopCh)
-
-			log.Info("Starting Spark app informer for namespace: %s", namespace)
-			factory.Start(stopCh)
-			factory.WaitForCacheSync(stopCh)
-			<-stopCh
-
-			_ = podInformer.RemoveEventHandler(registration)
-
-		}()
+	if err != nil {
+		log.Error("Failed to add spark app event handler: %v", err)
+		return
 	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer cancel()
+
+	factory.Start(ctx.Done())
+
+	<-ctx.Done()
+
+	log.Info("Received shutdown signal. Stopping Spark app informer...")
+	_ = podInformer.RemoveEventHandler(registration)
+	log.Info("Spark app informer successfully stopped.")
 }
 
 func (i SparkAppInformer) sparkAppAddedOrUpdated(obj interface{}) {
@@ -120,7 +117,7 @@ func (i SparkAppInformer) sparkAppAddedOrUpdated(obj interface{}) {
 	}
 
 	model.AddOrUpdateSparkApp(appID, sparkJob)
-	log.Info("Spark app : %s/%s (%s) -> %s", sparkJob.Namespace, appID, sparkJob.Status, sparkJob.InternalURL)
+	log.Info("Spark app updated: %s/%s (%s) -> %s", sparkJob.Namespace, appID, sparkJob.Status, sparkJob.InternalURL)
 }
 
 func (i SparkAppInformer) sparkAppDeleted(obj interface{}) {
