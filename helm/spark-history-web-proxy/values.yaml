@@ -40,9 +40,8 @@ configuration:
       port: 4040
       # -- Specify the base path for the Spark UI proxy.
       # -- When the proxyBase is set to /proxy, enable the property `spark.ui.reverseProxy=true` in your Spark job configuration.
-      # -- When the proxyBase is set to a value other than `/proxy`, enable the property like `spark.ui.proxyBase=/sparkui` 
-      #    and disable the property `spark.ui.reverseProxy=false` in your Spark job configuration.
-      proxyBase: /proxy
+      # -- When the proxyBase is set to a value other than `/proxy`, disable the property `spark.ui.reverseProxy=false` in your Spark job configuration if already set.
+      proxyBase: /sparkui
     # -- List of namespaces where the spark jobs run.
     # If empty, all namespaces will be allowed.
     jobNamespaces:
