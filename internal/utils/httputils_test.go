@@ -17,6 +17,7 @@
 package utils
 
 import (
+	"net/http"
 	"testing"
 )
 
@@ -59,6 +60,58 @@ func TestValidateURL(t *testing.T) {
 				}
 			}()
 			ValidateURL(url, "The URL is not valid")
+		})
+	}
+}
+
+// TestIsBrowserRequest tests the isBrowserRequest function.
+func TestIsBrowserRequest(t *testing.T) {
+	tests := []struct {
+		name      string
+		userAgent string
+		isBrowser bool
+	}{
+		{
+			name:      "Browser request (Chrome)",
+			userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+			isBrowser: true,
+		},
+		{
+			name:      "Browser request (Firefox)",
+			userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+			isBrowser: true,
+		},
+		{
+			name:      "Non-browser request (curl)",
+			userAgent: "curl/7.68.0",
+			isBrowser: false,
+		},
+		{
+			name:      "Non-browser request (Postman)",
+			userAgent: "PostmanRuntime/7.28.0",
+			isBrowser: false,
+		},
+		{
+			name:      "Empty User-Agent",
+			userAgent: "",
+			isBrowser: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a mock request with the given User-Agent
+			req := &http.Request{
+				Header: http.Header{
+					"User-Agent": []string{tt.userAgent},
+				},
+			}
+
+			// Check if the function returns the expected result
+			got := IsBrowserRequest(req)
+			if got != tt.isBrowser {
+				t.Errorf("isBrowserRequest() = %v, want %v", got, tt.isBrowser)
+			}
 		})
 	}
 }

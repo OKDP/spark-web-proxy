@@ -71,7 +71,7 @@ func (r SparkkHistoryController) HandleHistoryApp(c *gin.Context) {
 
 	upstreamURL, err := url.Parse(fmt.Sprintf("%s%s/%s%s", r.URL, r.sparkHistoryBase, appID, jobPath))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid target URL"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid upstream URL"})
 		return
 	}
 
@@ -85,7 +85,7 @@ func (r SparkkHistoryController) HandleDefault(c *gin.Context) {
 
 	upstreamURL, err := url.Parse(fmt.Sprintf("%s%s", r.URL, path))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid target URL"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid upstream URL"})
 		return
 	}
 

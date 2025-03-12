@@ -62,7 +62,7 @@ func (r SparkUIController) HandleLiveApp(c *gin.Context) {
 
 	upstreamURL, err := url.Parse(fmt.Sprintf("%s/%s", sparkApp.InternalURL, sparkAppPath))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid target URL"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid upstream URL"})
 		return
 	}
 
@@ -74,5 +74,6 @@ func (r SparkUIController) HandleLiveApp(c *gin.Context) {
 
 	spark.
 		NewDefaultSparkHandler(upstreamURL).
+		WithSparkUIErrorHandler(c.Request.URL).
 		ServeHTTP(c.Writer, c.Request)
 }

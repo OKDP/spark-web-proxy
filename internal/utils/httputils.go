@@ -18,7 +18,9 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
+	"strings"
 )
 
 // ValidateURL checks if a given string is a valid URL and panics if it is not.
@@ -27,4 +29,14 @@ func ValidateURL(u string, label string) {
 	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
 		panic(fmt.Sprintf("🚨 %s => %q (Error: %v)", label, u, err))
 	}
+}
+
+// IsBrowserRequest checks if the incoming HTTP request is from a browser.
+// It does so by inspecting the "User-Agent" header and checking for the presence of the word "Mozilla",
+// which is part of most modern browser User-Agent strings.
+//
+// Returns true if the request comes from a browser (i.e., the User-Agent contains "Mozilla"), otherwise false.
+func IsBrowserRequest(req *http.Request) bool {
+	userAgent := req.Header.Get("User-Agent")
+	return strings.Contains(userAgent, "Mozilla")
 }

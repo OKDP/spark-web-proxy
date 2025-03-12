@@ -14,18 +14,18 @@
  *    limitations under the License.
  */
 
-package proxy
+package utils
 
 import (
-	"fmt"
-	"net/http"
-
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
+	"regexp"
 )
 
-func NewErrorHandler() func(http.ResponseWriter, *http.Request, error) {
-	return func(rw http.ResponseWriter, req *http.Request, err error) {
-		log.Error("An error was occured when accessing url: %s, \ndetails: %+v", req.URL.Path, err)
-		http.Error(rw, fmt.Sprintf("Proxy Error: %s", err.Error()), http.StatusBadGateway)
+// Function to clean the Spark URL job or stage kill path
+func CleanKillURLPath(path string) string {
+	re := regexp.MustCompile(`(.*)/[^/]+/kill[/]{0,1}(\?.*)?$`)
+	matches := re.FindStringSubmatch(path)
+	if len(matches) > 1 {
+		return matches[1]
 	}
+	return path
 }

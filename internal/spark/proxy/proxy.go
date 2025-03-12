@@ -26,12 +26,17 @@ type SparkReverseProxy struct {
 	*httputil.ReverseProxy
 }
 
-func NewSparkReverseProxy(c ReverseProxyHandler, target *url.URL) *SparkReverseProxy {
-	proxy := httputil.NewSingleHostReverseProxy(target)
-	proxy.Director = c.ModifyRequest(target)
+func NewSparkReverseProxy(c ReverseProxyHandler, upstreamURL *url.URL) *SparkReverseProxy {
+	proxy := httputil.NewSingleHostReverseProxy(upstreamURL)
+	proxy.Director = c.ModifyRequest(upstreamURL)
 	proxy.ModifyResponse = c.ModifyResponse()
-	proxy.ErrorHandler = NewErrorHandler()
+	proxy.ErrorHandler = DefaultErrorHandler()
 	return &SparkReverseProxy{proxy}
+}
+
+func (p *SparkReverseProxy) WithSparkUIErrorHandler(fromURL *url.URL) *SparkReverseProxy {
+	p.ReverseProxy.ErrorHandler = SparkUIErrorHandler(fromURL)
+	return p
 }
 
 func (p *SparkReverseProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
