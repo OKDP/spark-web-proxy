@@ -9,7 +9,7 @@ help:
 	@echo "  run         Run the project locally"
 	@echo "  update      Update all the project dependencies"
 
-format: gofmt
+format: tools gofmt
 lint: format golint
 compile: lint gocompile
 test: compile gotest

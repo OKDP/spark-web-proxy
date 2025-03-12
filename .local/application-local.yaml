@@ -1,0 +1,36 @@
+proxy:
+  listenAddress: 0.0.0.0
+  port: 8090
+  #Server Mode: one of => debug, release, test
+  mode: debug
+
+spark:
+  history:
+    scheme: http
+    service: spark-history-server
+    port: 18080
+  ui:
+    port: 4040
+    proxyBase: /sparkui
+  jobNamespaces:
+  - spark
+
+logging:
+  # debug, info, warn, error, fatal, panic
+  level: "debug"
+  # console or json
+  format: "console"
+
+security:
+  cors:
+    allowedOrigins: ["*"]
+    allowedMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
+    allowedHeaders: ["Origin", "Accept", "Authorization", "Content-Length", "Content-Type"]
+    exposedHeaders: ["Content-Length"]
+    allowCredentials: true 
+    maxAge: 3600
+  headers:
+    X-Frame-Options: "DENY"
+    X-Content-Type-Options: nosniff
+
+
