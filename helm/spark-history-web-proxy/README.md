@@ -84,7 +84,7 @@ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --vers
 | fullnameOverride | string | `""` | Overrides the release name. |
 | image.pullPolicy | string | `"Always"` | Image pull policy. |
 | image.repository | string | `"quay.io/okdp/spark-history-web-proxy"` | Docker image registry. |
-| image.tag | string | `"0.1.0-snapshot"` | Image tag. |
+| image.tag | string | `"0.1.0"` | Image tag. |
 | imagePullSecrets | list | `[]` | Secrets to be used for pulling images from private Docker registries. |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `""` | Specify the ingress class (Kubernetes >= 1.18). |
