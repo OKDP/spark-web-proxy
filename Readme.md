@@ -9,7 +9,7 @@ The proxy is non-intrusive and independent of any specific version of Spark Hist
 
 ![Spark History](docs/images/spark-history.png)
 
-# Requirements
+## Requirements
 
 - Kubernetes cluster
 - [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html)
@@ -19,7 +19,7 @@ The proxy is non-intrusive and independent of any specific version of Spark Hist
 > You can use the following [Spark History Server](https://github.com/OKDP/spark-history-server) helm chart.
 > 
 
-# Installation
+## Installation
 
 The web proxy can be deployed either as a sidecar container alongside your Spark History Server or as an independent helm chart.
 
@@ -33,30 +33,30 @@ Refer to [README](helm/spark-history-web-proxy/README.md) for customization opti
 
 In both cases, you need to use the web proxy ingress instead of your spark history ingress.
 
-# Spark History and spark jobs Configuration
+## Spark History and spark jobs Configuration
 
 Both [Spark History and Spark jobs](https://spark.apache.org/docs/latest/monitoring.html) themselves must be configured to log events, and to log them to the same shared, writable directory.
 
-## Spark History:
+### Spark History:
 
 ```console
 spark.history.fs.logDirectory /path/to/the/same/shared/event/logs
 ```
 
-## Spark Jobs:
+### Spark Jobs:
 
 ```console
 spark.eventLog.enabled true
 spark.eventLog.dir /path/to/the/same/shared/event/logs
 ```
 
-## Spark Reverse Proxy Support
+### Spark Reverse Proxy Support
 
 The web proxy supports Spark Reverse Proxy feature for Spark web UIs by enabling the property `spark.ui.reverseProxy=true` in your spark jobs. In that case, the web proxy configuration property `configuration.spark.ui.proxyBase` should be set to `/proxy`
 
 For more configuration properties, refer to [Spark Monitoring](https://spark.apache.org/docs/latest/monitoring.html) configuration page.
 
-# Spark jobs deployment
+## Spark jobs deployment
 
 In a cluster mode, spark by default adds the label `spark-role: driver` in the spark driver pods.
 
@@ -71,7 +71,7 @@ metadata:
     ...
 ```
 
-# Authentication
+## Authentication
 
 [Spark Authentication Filter](https://github.com/OKDP/okdp-spark-auth-filter) can be applied to both Spark History Server and Spark Jobs to enable user authentication and authorization.
 
