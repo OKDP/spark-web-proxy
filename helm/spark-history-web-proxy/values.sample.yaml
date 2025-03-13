@@ -9,6 +9,9 @@ configuration:
     history:
       service: spark-history-server.spark.svc.cluster.local
     ui:
+      # -- Specify the base path for the Spark UI proxy.
+      # -- When the proxyBase is set to /proxy, enable the property `spark.ui.reverseProxy=true` in your Spark job configuration.
+      # -- When the proxyBase is set to a value other than `/proxy`, disable the property `spark.ui.reverseProxy=false` in your Spark job configuration if already set.
       proxyBase: /sparkui
     jobNamespaces:
     - spark

@@ -1,6 +1,23 @@
 apiVersion: v2
 name: spark-history-web-proxy
-description: A Helm chart for Kubernetes
+description: Helm chart for spark-history-web-proxy
 type: application
 version: 0.1.0
 appVersion: "0.1.0-snapshot"
+keywords:
+  - spark
+  - spark-history
+  - spark-history-server
+  - spark-history-web-proxy
+home: https://spark.apache.org
+maintainers:
+  - email: idir.izitounene@kubotal.io
+    name: idirze
+    url: https://github.com/mlahouar
+sources:
+  - https://github.com/apache/spark
+  - https://github.com/OKDP/okdp-spark-auth-filter
+  - https://github.com/OKDP/spark-images
+  - https://github.com/OKDP/spark-history-server/tree/main/helm/spark-history-server
+  - https://github.com/OKDP/spark-history-web-proxy
+

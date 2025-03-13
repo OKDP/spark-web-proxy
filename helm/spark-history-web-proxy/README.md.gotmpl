@@ -1,0 +1,63 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+## Introduction
+
+Helm chart for [Spark History Web Proxy](../../) deployment using the [Helm](https://helm.sh) package manager.
+
+{{ template "chart.requirementsSection" . }}
+
+## Prerequisites
+
+- Helm >= 3
+- Kubernetes >= 1.19
+
+## Installing the chart
+
+To install the chart with the release name `my-release`:
+
+```shell
+$ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --version {{ template "chart.version" . }}
+```
+
+This will create a release of `my-release` in the default namespace. To install in a different namespace:
+
+```shell
+$ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --version {{ template "chart.version" . }} \
+       --namespace spark 
+```
+
+Note that `helm` will fail to install if the namespace if doesn't exist. Either create the namespace beforehand or pass the `--create-namespace` flag to the `helm install` command.
+
+## Uninstalling the chart  `my-release`
+
+To uninstall `my-release`:
+
+```shell
+$ helm uninstall my-release -n spark
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Downloading the chart locally
+
+To download the chart locally, use the following command:
+
+```shell
+$ helm pull oci://quay.io/okdp/charts/spark-history-web-proxy --version {{ template "chart.version" . }}
+```
+
+##### 2. Deploy the Helm Chart
+
+```shell
+helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --version {{ template "chart.version" . }} \
+      --namespace spark \
+      --values my-values.yaml \
+```
+
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
