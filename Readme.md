@@ -1,3 +1,7 @@
+[![ci](https://github.com/okdp/spark-history-web-proxy/actions/workflows/ci.yml/badge.svg)](https://github.com/okdp/spark-history-web-proxy/actions/workflows/ci.yml)
+[![release-please](https://github.com/okdp/spark-history-web-proxy/actions/workflows/release-please.yml/badge.svg)](https://github.com/okdp/spark-history-web-proxy/actions/workflows/release-please.yml)
+[![License Apache2](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
 
 spark-history-web-proxy acts as a reverse proxy for [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html) and [Spark UI](https://spark.apache.org/docs/latest/web-ui.html). It completes [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html) by seamlessly integrating live (running) Spark applications UIs. The web proxy enables real-time dynamic discovery and monitoring of running spark applications (without delay) alongside completed applications, all within your existing Spark History Server Web UI.
 
