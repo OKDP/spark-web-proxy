@@ -7,7 +7,7 @@ image:
   # -- Image pull policy.
   pullPolicy: Always
   # -- Image tag.
-  tag: "0.1.0-snapshot"
+  tag: "0.1.0"
 
 # -- Secrets to be used for pulling images from private Docker registries.
 imagePullSecrets: []
@@ -179,4 +179,3 @@ tolerations: []
 
 # -- Affinity for pod scheduling.
 affinity: {}
-
