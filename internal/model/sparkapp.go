@@ -37,7 +37,7 @@ func (app SparkApp) IsRunning() bool {
 }
 
 func (app SparkApp) IsCompleted() bool {
-	return app.Status == string(AppSucceeded)
+	return !app.IsRunning()
 }
 
 // AddOrUpdateSparkApp adds a new SparkApp to the map or updates an existing one

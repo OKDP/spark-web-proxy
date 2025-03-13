@@ -48,12 +48,8 @@ func (r SparkUIController) HandleLiveApp(c *gin.Context) {
 	sparkAppPath := strings.TrimPrefix(c.Param("path"), "/")
 
 	sparkApp, found := model.GetSparkApp(appID)
-	if !found {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Spark UI not found for job:" + appID})
-		return
-	}
-
-	if !sparkApp.IsRunning() {
+	
+	if !found || sparkApp.IsCompleted() {
 		c.Request.URL.Path = strings.ReplaceAll(c.Request.URL.Path, r.sparkUIProxyBase, r.sparkHistoryBase)
 		log.Debug("The application ID '%s' was completed, redirect to spark history '%s'", appID, c.Request.URL.String())
 		c.Redirect(http.StatusFound, c.Request.URL.String())

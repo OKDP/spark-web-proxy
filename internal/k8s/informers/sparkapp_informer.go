@@ -19,6 +19,7 @@ package informers
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -87,7 +88,7 @@ func (i SparkAppInformer) WatchNamespaceSparkApps(clientset *kubernetes.Clientse
 		return
 	}
 
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 	defer cancel()
 
 	factory.Start(ctx.Done())
