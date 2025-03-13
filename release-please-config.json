@@ -4,7 +4,7 @@
     "packages": {
       "helm/spark-history-web-proxy": {
         "component": "helm-spark-history-web-proxy",
-        "initial-version": "3.1.3-1.0.0",
+        "initial-version": "0.1.0",
         "extra-label": "helm",
         "tag-separator": "/",
         "changelog-path": "CHANGELOG.md",
@@ -18,7 +18,7 @@
       },
       "docker": {
         "component": "spark-history-web-proxy",
-        "initial-version": "1.0.0",
+        "initial-version": "0.1.0",
         "extra-label": "docker",
         "changelog-path": "CHANGELOG.md",
         "release-type": "node",
@@ -41,6 +41,11 @@
       },
       {
         "type": "docs",
+        "section": "Documentation",
+        "hidden": false
+      },
+      {
+        "type": "doc",
         "section": "Documentation",
         "hidden": false
       },
