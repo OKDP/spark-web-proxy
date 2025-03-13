@@ -3,7 +3,7 @@ name: spark-history-web-proxy
 description: Helm chart for spark-history-web-proxy
 type: application
 version: 0.1.0
-appVersion: "0.1.0-snapshot"
+appVersion: "0.1.0"
 keywords:
   - spark
   - spark-history
@@ -20,4 +20,3 @@ sources:
   - https://github.com/OKDP/spark-images
   - https://github.com/OKDP/spark-history-server/tree/main/helm/spark-history-server
   - https://github.com/OKDP/spark-history-web-proxy
-
