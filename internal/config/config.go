@@ -23,6 +23,8 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+
+	"github.com/okdp/spark-history-web-proxy/internal/utils"
 )
 
 type ApplicationConfig struct {
@@ -55,7 +57,6 @@ type History struct {
 
 // Spark UI configuration
 type UI struct {
-	Port      int    `yaml:"port"`
 	ProxyBase string `yaml:"proxyBase"`
 }
 
@@ -118,6 +119,19 @@ func GetAppConfig() *ApplicationConfig {
 		printConfig(configFile)
 	})
 	return instance
+}
+
+func (c ApplicationConfig) GetSparkHistoryBaseURL() string {
+	sparkHistoryBaseURL := fmt.Sprintf("%s://%s:%d", c.Spark.History.Scheme,
+		c.Spark.History.Service,
+		c.Spark.History.Port)
+
+	utils.ValidateURL(sparkHistoryBaseURL, fmt.Sprintf("The Spark History Server URL is not valid (Scheme: %s, Service: %s, Port: %d)",
+		c.Spark.History.Scheme,
+		c.Spark.History.Service,
+		c.Spark.History.Port))
+
+	return sparkHistoryBaseURL
 }
 
 func printConfig(fileConfigPath string) {

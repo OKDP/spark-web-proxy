@@ -26,20 +26,23 @@ import (
 
 	"github.com/okdp/spark-history-web-proxy/internal/config"
 	"github.com/okdp/spark-history-web-proxy/internal/constants"
+	"github.com/okdp/spark-history-web-proxy/internal/discovery"
 	log "github.com/okdp/spark-history-web-proxy/internal/logging"
 	"github.com/okdp/spark-history-web-proxy/internal/model"
 	"github.com/okdp/spark-history-web-proxy/internal/spark"
 )
 
 type SparkUIController struct {
-	sparkHistoryBase string
-	sparkUIProxyBase string
+	sparkHistoryBaseURL string
+	sparkHistoryBase    string
+	sparkUIProxyBase    string
 }
 
 func NewSparkUIController(config *config.ApplicationConfig) *SparkUIController {
 	return &SparkUIController{
-		sparkHistoryBase: constants.SparkHistoryBase,
-		sparkUIProxyBase: strings.TrimSpace(config.Spark.UI.ProxyBase),
+		sparkHistoryBaseURL: config.GetSparkHistoryBaseURL(),
+		sparkHistoryBase:    constants.SparkHistoryBase,
+		sparkUIProxyBase:    strings.TrimSpace(config.Spark.UI.ProxyBase),
 	}
 }
 
@@ -48,28 +51,42 @@ func (r SparkUIController) HandleLiveApp(c *gin.Context) {
 	sparkAppPath := strings.TrimPrefix(c.Param("path"), "/")
 
 	sparkApp, found := model.GetSparkApp(appID)
-	
-	if !found || sparkApp.IsCompleted() {
-		c.Request.URL.Path = strings.ReplaceAll(c.Request.URL.Path, r.sparkUIProxyBase, r.sparkHistoryBase)
-		log.Debug("The application ID '%s' was completed, redirect to spark history '%s'", appID, c.Request.URL.String())
-		c.Redirect(http.StatusFound, c.Request.URL.String())
+
+	// The application was started in cluster or client mode and was completed
+	if found && sparkApp.IsCompleted() {
+		r.redirectToSparkHistory(c, appID)
 		return
 	}
 
-	upstreamURL, err := url.Parse(fmt.Sprintf("%s/%s", sparkApp.InternalURL, sparkAppPath))
+	// The application was started in client or cluster mode and was not present locally
+	if !found {
+		log.Debug("The application '%s' was not found locally, checking in spark history ...", appID)
+		sparkApp, _ = discovery.ResolveSparkAppFromHistory(c.Request, r.sparkHistoryBaseURL, appID)
+		if sparkApp.IsCompleted() {
+			r.redirectToSparkHistory(c, appID)
+			return
+		}
+	}
+
+	sparkkUI := fmt.Sprintf("%s/%s", sparkApp.BaseURL, sparkAppPath)
+	upstreamURL, err := url.Parse(sparkkUI)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid upstream URL"})
+		log.Error("Invalid spark ui URL '%s' for the application '%s', redirect to spark history", sparkkUI, appID)
+		model.MakeSparkAppCompleted(appID)
+		r.redirectToSparkHistory(c, appID)
 		return
 	}
 
 	if r.sparkUIProxyBase != "/proxy" {
 		sparkUIRoot := fmt.Sprintf("%s/%s", r.sparkUIProxyBase, appID)
-		log.Debug("Set spark UI root for application '%s' to: %s", appID, sparkUIRoot)
 		c.Request.Header.Add("X-Forwarded-Context", sparkUIRoot)
 	}
 
-	spark.
-		NewDefaultSparkHandler(upstreamURL).
-		WithSparkUIErrorHandler(c.Request.URL).
-		ServeHTTP(c.Writer, c.Request)
+	spark.ServeSparkUI(c, upstreamURL, appID)
+}
+
+func (r SparkUIController) redirectToSparkHistory(c *gin.Context, appID string) {
+	c.Request.URL.Path = strings.ReplaceAll(c.Request.URL.Path, r.sparkUIProxyBase, r.sparkHistoryBase)
+	log.Debug("The application '%s' was completed, redirect to spark history '%s'", appID, c.Request.URL.String())
+	c.Redirect(http.StatusFound, c.Request.URL.String())
 }

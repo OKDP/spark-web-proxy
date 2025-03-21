@@ -14,11 +14,32 @@
  *    limitations under the License.
  */
 
-package constants
+package utils
 
-const (
-	SparkHistoryBase         = "/history"
-	SparkHistoryAppsEndpoint = "/api/v1/applications"
-	HealthzURI               = "/healthz"
-	ReadinessURI             = "/readiness"
+import (
+	"strings"
+
+	corev1 "k8s.io/api/core/v1"
 )
+
+func GetSparkUIPort(pod *corev1.Pod) int32 {
+	for _, container := range pod.Spec.Containers {
+		for _, port := range container.Ports {
+			if strings.Contains(strings.ToLower(port.Name), "ui") {
+				return port.ContainerPort
+			}
+		}
+	}
+	return 4040
+}
+
+func GetSparkAppID(pod *corev1.Pod) string {
+	for _, container := range pod.Spec.Containers {
+		for _, envVar := range container.Env {
+			if envVar.Name == "SPARK_APPLICATION_ID" {
+				return envVar.Value
+			}
+		}
+	}
+	return "-1"
+}

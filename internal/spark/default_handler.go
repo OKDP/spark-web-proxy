@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/gin-gonic/gin"
 	log "github.com/okdp/spark-history-web-proxy/internal/logging"
 	"github.com/okdp/spark-history-web-proxy/internal/spark/proxy"
 )
@@ -27,8 +28,19 @@ import (
 type DefaultSparkHandler struct {
 }
 
-func NewDefaultSparkHandler(upstreamURL *url.URL) *proxy.SparkReverseProxy {
-	return proxy.NewSparkReverseProxy(DefaultSparkHandler{}, upstreamURL)
+func NewDefaultSparkHandler(upstreamURL *url.URL, appID string) *proxy.SparkReverseProxy {
+	return proxy.NewSparkReverseProxy(DefaultSparkHandler{}, upstreamURL, appID)
+}
+
+func ServeSparkHistory(c *gin.Context, upstreamURL *url.URL, appID string) {
+	NewDefaultSparkHandler(upstreamURL, appID).
+		ServeHTTP(c.Writer, c.Request)
+}
+
+func ServeSparkUI(c *gin.Context, upstreamURL *url.URL, appID string) {
+	NewDefaultSparkHandler(upstreamURL, appID).
+		WithSparkUIErrorHandler(c.Request.URL).
+		ServeHTTP(c.Writer, c.Request)
 }
 
 func (c DefaultSparkHandler) ModifyRequest(upstreamURL *url.URL) func(*http.Request) {
@@ -39,14 +51,14 @@ func (c DefaultSparkHandler) ModifyRequest(upstreamURL *url.URL) func(*http.Requ
 		upstreamURL.RawQuery = req.URL.RawQuery
 		upstreamURL.RawFragment = req.URL.RawFragment
 		req.URL = upstreamURL
-		log.Debug("Request Method: %s, URL: %s, Host: %s, Headers: %v", req.Method, req.URL.String(), req.Host, req.Header)
+		// log.Debug("Request Method: %s, URL: %s, Host: %s, Headers: %v", req.Method, req.URL.String(), req.Host, req.Header)
 	}
 }
 
 func (c DefaultSparkHandler) ModifyResponse() func(*http.Response) error {
 	return func(resp *http.Response) error {
 		resp.TransferEncoding = []string{"identity"}
-		log.Debug("Response Status: %d, Headers: %v", resp.StatusCode, resp.Header)
+		// log.Debug("Response Status: %d, Headers: %v", resp.StatusCode, resp.Header)
 		if resp.StatusCode == http.StatusFound {
 			location := resp.Header.Get("Location")
 			if location == "" {

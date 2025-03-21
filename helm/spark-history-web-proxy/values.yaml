@@ -23,7 +23,7 @@ configuration:
     # -- Specify the Proxy listen port.
     port: 4040
     # -- Specify the Server Mode. One of `debug`, `release` or `test`.
-    mode: debug
+    mode: release
 
   spark:
     history:
@@ -35,9 +35,6 @@ configuration:
       # -- Same as spark.history.ui.port
       port: 18080
     ui:
-      # -- Specify the Spark UI listen port.
-      # -- Same as spark.ui.port
-      port: 4040
       # -- Specify the base path for the Spark UI proxy.
       # -- When the proxyBase is set to /proxy, enable the property `spark.ui.reverseProxy=true` in your Spark job configuration.
       # -- When the proxyBase is set to a value other than `/proxy`, disable the property `spark.ui.reverseProxy=false` in your Spark job configuration if already set.

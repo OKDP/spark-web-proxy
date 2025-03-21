@@ -18,7 +18,6 @@ package informers
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,6 +30,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/okdp/spark-history-web-proxy/internal/config"
+	"github.com/okdp/spark-history-web-proxy/internal/discovery"
 	log "github.com/okdp/spark-history-web-proxy/internal/logging"
 	"github.com/okdp/spark-history-web-proxy/internal/model"
 )
@@ -106,19 +106,8 @@ func (i SparkAppInformer) sparkAppAddedOrUpdated(obj interface{}) {
 		return
 	}
 
-	appID := getSparkAppID(pod)
-	if appID == "" {
-		return
-	}
-
-	sparkJob := model.SparkApp{
-		InternalURL: fmt.Sprintf("http://%s:%d", pod.Status.PodIP, i.ui.Port),
-		Namespace:   pod.Namespace,
-		Status:      string(pod.Status.Phase),
-	}
-
-	model.AddOrUpdateSparkApp(appID, sparkJob)
-	log.Info("Spark app updated: %s/%s (%s) -> %s", sparkJob.Namespace, appID, sparkJob.Status, sparkJob.InternalURL)
+	sparkApp, _ := discovery.ResolveSparkAppFromPod(pod)
+	log.Info("The application '%s' (%s/%s) was updated: %s at %s", sparkApp.AppID, sparkApp.Namespace, pod.Name, sparkApp.Status, sparkApp.BaseURL)
 }
 
 func (i SparkAppInformer) sparkAppDeleted(obj interface{}) {
@@ -127,22 +116,6 @@ func (i SparkAppInformer) sparkAppDeleted(obj interface{}) {
 		return
 	}
 
-	appID := getSparkAppID(pod)
-	if appID == "" {
-		return
-	}
-
-	model.DeleteSparkApp(appID)
-	log.Info("Removed Spark App '%s' on namespace '%s' (appID: %s)", pod.Name, pod.Namespace, appID)
-}
-
-func getSparkAppID(pod *corev1.Pod) string {
-	for _, container := range pod.Spec.Containers {
-		for _, envVar := range container.Env {
-			if envVar.Name == "SPARK_APPLICATION_ID" {
-				return envVar.Value
-			}
-		}
-	}
-	return ""
+	sparkApp, _ := model.DeleteSparkAppByName(pod.Name)
+	log.Info("The application '%s' (%s/%s) was removed", sparkApp.AppID, pod.Namespace, pod.Name)
 }

@@ -10,7 +10,6 @@ spark:
     service: spark-history-server
     port: 18080
   ui:
-    port: 4040
     proxyBase: /sparkui
   jobNamespaces:
   - spark

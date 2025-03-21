@@ -27,7 +27,7 @@ import (
 	"github.com/okdp/spark-history-web-proxy/internal/config"
 	"github.com/okdp/spark-history-web-proxy/internal/constants"
 	"github.com/okdp/spark-history-web-proxy/internal/controllers"
-	"github.com/okdp/spark-history-web-proxy/internal/k8s/informers"
+	"github.com/okdp/spark-history-web-proxy/internal/discovery/resolvers/k8s/informers"
 	log "github.com/okdp/spark-history-web-proxy/internal/logging"
 	"github.com/okdp/spark-history-web-proxy/internal/security"
 )

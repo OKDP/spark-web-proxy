@@ -99,6 +99,12 @@ func Panic(args ...interface{}) {
 // Logger returns a middleware that will write the logs to gin.DefaultWriter.
 // By default, gin.DefaultWriter = os.Stdout.
 func Logger() []gin.HandlerFunc {
-	return []gin.HandlerFunc{ginzap.Ginzap(instance.Desugar(), time.RFC3339, true),
-		ginzap.RecoveryWithZap(instance.Desugar(), true)}
+	logger := zap.NewNop()
+
+	if gin.Mode() != gin.ReleaseMode {
+		logger = instance.Desugar()
+	}
+
+	return []gin.HandlerFunc{ginzap.Ginzap(logger, time.RFC3339, true),
+		ginzap.RecoveryWithZap(logger, true)}
 }

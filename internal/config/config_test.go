@@ -77,7 +77,6 @@ func Test_LoadConfig_Spark(t *testing.T) {
 	assert.Equal(t, "spark-history-server", spark.History.Service, "spark.history.service")
 	assert.Equal(t, 18080, spark.History.Port, "spark.history.port")
 
-	assert.Equal(t, 4040, spark.UI.Port, "spark.ui.port")
 	assert.Equal(t, "/sparkui", spark.UI.ProxyBase, "spark.ui.proxyBase")
 	assert.Equal(t, []string{"default", "dev"}, spark.JobNamespaces, "spark.jobNamespaces")
 }

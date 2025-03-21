@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	log "github.com/okdp/spark-history-web-proxy/internal/logging"
+	"github.com/okdp/spark-history-web-proxy/internal/model"
 	"github.com/okdp/spark-history-web-proxy/internal/utils"
 )
 
@@ -47,25 +48,26 @@ type ReverseProxyHandler interface {
 // Returns:
 //   - A function of type `func(http.ResponseWriter, *http.Request, error)` that handles
 //     the error and sends the appropriate response back to the client.
-func DefaultErrorHandler() func(http.ResponseWriter, *http.Request, error) {
+func DefaultErrorHandler(appID string) func(http.ResponseWriter, *http.Request, error) {
 	return func(rw http.ResponseWriter, req *http.Request, err error) {
-		log.Error("An error was occured when accessing url: %s, \ndetails: %+v", req.URL.Path, err)
-		http.Error(rw, fmt.Sprintf("Proxy Error: %s", err.Error()), http.StatusBadGateway)
+		log.Error("An error was occured when accessing the application '%s' at URL: %s, \ndetails: %+v", appID, req.URL.String(), err)
+		http.Error(rw, fmt.Sprintf("An error was occured when accessing the application '%s' at URL: %s, %s", appID, req.URL.String(), err.Error()), http.StatusBadGateway)
 	}
 }
 
-func SparkUIErrorHandler(fromURL *url.URL) func(http.ResponseWriter, *http.Request, error) {
-	defaultHandler := DefaultErrorHandler()
-
+func SparkUIErrorHandler(fromURL *url.URL, appID string) func(http.ResponseWriter, *http.Request, error) {
 	return func(rw http.ResponseWriter, req *http.Request, err error) {
 		if strings.Contains(fromURL.Path, "/kill") && utils.IsBrowserRequest(req) {
 			previousPage := utils.CleanKillURLPath(fromURL.Path)
-			log.Info("A spark job or stage kill was received '%s', redirecting to previous page: %s", fromURL.Path, previousPage)
+			log.Info("A spark job or stage kill was received '%s' for application '%s', redirecting to previous page: %s", fromURL.Path, appID, previousPage)
 			rw.Header().Set("Location", previousPage)
 			rw.WriteHeader(http.StatusFound)
 			return
 		}
-
-		defaultHandler(rw, req, err)
+		log.Error("An error was occured when accessing spark application '%s' at URL: %s, redirect to spark history \ndetails: %+v", appID, req.URL.String(), err)
+		model.MakeSparkAppCompleted(appID)
+		// redirect to spark history
+		rw.Header().Set("Location", fromURL.Path)
+		rw.WriteHeader(http.StatusFound)
 	}
 }
