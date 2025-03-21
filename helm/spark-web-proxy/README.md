@@ -1,6 +1,6 @@
-# spark-history-web-proxy
+# spark-web-proxy
 
-Helm chart for spark-history-web-proxy
+Helm chart for spark-web-proxy
 
 ## Introduction
 
@@ -16,13 +16,13 @@ Helm chart for [Spark History Web Proxy](../../) deployment using the [Helm](htt
 To install the chart with the release name `my-release`:
 
 ```shell
-$ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --version 0.1.0
+$ helm install my-release oci://quay.io/okdp/charts/spark-web-proxy --version 0.1.0
 ```
 
 This will create a release of `my-release` in the default namespace. To install in a different namespace:
 
 ```shell
-$ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --version 0.1.0 \
+$ helm install my-release oci://quay.io/okdp/charts/spark-web-proxy --version 0.1.0 \
        --namespace spark
 ```
 
@@ -43,13 +43,13 @@ The command removes all the Kubernetes components associated with the chart and 
 To download the chart locally, use the following command:
 
 ```shell
-$ helm pull oci://quay.io/okdp/charts/spark-history-web-proxy --version 0.1.0
+$ helm pull oci://quay.io/okdp/charts/spark-web-proxy --version 0.1.0
 ```
 
 ##### 2. Deploy the Helm Chart
 
 ```shell
-helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --version 0.1.0 \
+helm install my-release oci://quay.io/okdp/charts/spark-web-proxy --version 0.1.0 \
       --namespace spark \
       --values my-values.yaml \
 ```
@@ -82,7 +82,7 @@ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --vers
 | configuration.spark.ui.proxyBase | string | `"/sparkui"` | When the proxyBase is set to a value other than `/proxy`, disable the property `spark.ui.reverseProxy=false` in your Spark job configuration if already set. |
 | fullnameOverride | string | `""` | Overrides the release name. |
 | image.pullPolicy | string | `"Always"` | Image pull policy. |
-| image.repository | string | `"quay.io/okdp/spark-history-web-proxy"` | Docker image registry. |
+| image.repository | string | `"quay.io/okdp/spark-web-proxy"` | Docker image registry. |
 | image.tag | string | `"0.1.0-snapshot"` | Image tag. |
 | imagePullSecrets | list | `[]` | Secrets to be used for pulling images from private Docker registries. |
 | ingress.annotations | object | `{}` |  |
@@ -120,5 +120,5 @@ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --vers
 * <https://github.com/OKDP/okdp-spark-auth-filter>
 * <https://github.com/OKDP/spark-images>
 * <https://github.com/OKDP/spark-history-server/tree/main/helm/spark-history-server>
-* <https://github.com/OKDP/spark-history-web-proxy>
+* <https://github.com/OKDP/spark-web-proxy>
 

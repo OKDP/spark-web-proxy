@@ -24,12 +24,12 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/okdp/spark-history-web-proxy/internal/config"
-	"github.com/okdp/spark-history-web-proxy/internal/constants"
-	"github.com/okdp/spark-history-web-proxy/internal/controllers"
-	"github.com/okdp/spark-history-web-proxy/internal/discovery/resolvers/k8s/informers"
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
-	"github.com/okdp/spark-history-web-proxy/internal/security"
+	"github.com/okdp/spark-web-proxy/internal/config"
+	"github.com/okdp/spark-web-proxy/internal/constants"
+	"github.com/okdp/spark-web-proxy/internal/controllers"
+	"github.com/okdp/spark-web-proxy/internal/discovery/resolvers/k8s/informers"
+	log "github.com/okdp/spark-web-proxy/internal/logging"
+	"github.com/okdp/spark-web-proxy/internal/security"
 )
 
 func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {

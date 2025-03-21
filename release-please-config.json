@@ -2,8 +2,8 @@
     "separate-pull-requests": true,
     "include-v-in-tag": true,
     "packages": {
-      "helm/spark-history-web-proxy": {
-        "component": "helm-spark-history-web-proxy",
+      "helm/spark-web-proxy": {
+        "component": "helm-spark-web-proxy",
         "initial-version": "3.1.3-1.0.0",
         "extra-label": "helm",
         "tag-separator": "/",
@@ -17,7 +17,7 @@
         "include-component-in-tag": true
       },
       "docker": {
-        "component": "spark-history-web-proxy",
+        "component": "spark-web-proxy",
         "initial-version": "1.0.0",
         "extra-label": "docker",
         "changelog-path": "CHANGELOG.md",
@@ -57,6 +57,11 @@
       {
         "type": "ci",
         "section": "Continuous Integration",
+        "hidden": true
+      },
+      {
+        "type": "chore",
+        "section": "Chore",
         "hidden": true
       }
     ],

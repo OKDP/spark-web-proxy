@@ -21,8 +21,8 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 
-	"github.com/okdp/spark-history-web-proxy/internal/constants"
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
+	"github.com/okdp/spark-web-proxy/internal/constants"
+	log "github.com/okdp/spark-web-proxy/internal/logging"
 )
 
 type SparkHistoryClient struct {

@@ -1,4 +1,4 @@
-module github.com/okdp/spark-history-web-proxy
+module github.com/okdp/spark-web-proxy
 
 go 1.23.0
 

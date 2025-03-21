@@ -7,7 +7,7 @@ ARG LDFLAGS="-X localbuild=true"
 ARG TARGETOS="linux"
 ARG TARGETARCH
 
-WORKDIR /workspace/spark-history-web-proxy
+WORKDIR /workspace/spark-web-proxy
 
 COPY Makefile Makefile
 COPY go.* ./
@@ -20,17 +20,17 @@ RUN go mod tidy \
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg \
     LDFLAGS=${LDFLAGS##-X localbuild=true} GIT_COMMIT=$GIT_COMMIT \
-    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o spark-history-web-proxy main.go
+    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o spark-web-proxy main.go
 
 FROM alpine:3.20.3
 
 RUN apk --no-cache add ca-certificates && update-ca-certificates
 
-COPY --from=go-build /workspace/spark-history-web-proxy /usr/local/bin/
+COPY --from=go-build /workspace/spark-web-proxy /usr/local/bin/
 
 USER 65534:65534
 
 EXPOSE 8090
 
-ENTRYPOINT ["spark-history-web-proxy"]
+ENTRYPOINT ["spark-web-proxy"]
 

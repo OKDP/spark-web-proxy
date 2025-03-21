@@ -22,9 +22,9 @@ import (
 	"net/url"
 	"strings"
 
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
-	"github.com/okdp/spark-history-web-proxy/internal/model"
-	"github.com/okdp/spark-history-web-proxy/internal/utils"
+	log "github.com/okdp/spark-web-proxy/internal/logging"
+	"github.com/okdp/spark-web-proxy/internal/model"
+	"github.com/okdp/spark-web-proxy/internal/utils"
 )
 
 type ReverseProxyHandler interface {

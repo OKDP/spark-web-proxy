@@ -24,7 +24,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
-	"github.com/okdp/spark-history-web-proxy/internal/utils"
+	"github.com/okdp/spark-web-proxy/internal/utils"
 )
 
 type ApplicationConfig struct {

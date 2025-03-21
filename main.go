@@ -17,7 +17,7 @@
 package main
 
 import (
-	"github.com/okdp/spark-history-web-proxy/cmd"
+	"github.com/okdp/spark-web-proxy/cmd"
 )
 
 func main() {

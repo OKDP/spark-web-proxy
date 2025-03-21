@@ -19,15 +19,15 @@ package cmd
 import (
 	"os"
 
-	"github.com/okdp/spark-history-web-proxy/internal/config"
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
-	"github.com/okdp/spark-history-web-proxy/internal/server"
+	"github.com/okdp/spark-web-proxy/internal/config"
+	log "github.com/okdp/spark-web-proxy/internal/logging"
+	"github.com/okdp/spark-web-proxy/internal/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var RootCmd = &cobra.Command{
-	Use:   "spark-history-web-proxy",
+	Use:   "spark-web-proxy",
 	Short: "Spark UI Proxy",
 	Run:   runSparkUIController,
 }
@@ -56,7 +56,7 @@ func init() {
 	viper.SetDefault("security.cors.allowCredentials", false)
 	viper.SetDefault("security.cors.maxAge", 3600)
 
-	viper.SetConfigName("spark-history-web-proxy")
+	viper.SetConfigName("spark-web-proxy")
 	viper.SetConfigType("yaml")
 
 	RootCmd.PersistentFlags().String("config", "config.yaml", "Path to configuration file")

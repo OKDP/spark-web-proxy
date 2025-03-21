@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "spark-history-web-proxy.fullname" . }}
+  name: {{ include "spark-web-proxy.fullname" . }}
   labels:
-    {{- include "spark-history-web-proxy.labels" . | nindent 4 }}
+    {{- include "spark-web-proxy.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "spark-history-web-proxy.selectorLabels" . | nindent 6 }}
+      {{- include "spark-web-proxy.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "spark-history-web-proxy.labels" . | nindent 8 }}
+        {{- include "spark-web-proxy.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -28,7 +28,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "spark-history-web-proxy.serviceAccountName" . }}
+      serviceAccountName: {{ include "spark-web-proxy.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -38,7 +38,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           args:
             - "--config"
-            - "/etc/okdp/spark-history-web-proxy/config.yaml"
+            - "/etc/okdp/spark-web-proxy/config.yaml"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -51,17 +51,17 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - name: "{{ include "spark-history-web-proxy.fullname" . }}"
-            mountPath: "/etc/okdp/spark-history-web-proxy/config.yaml"
+          - name: "{{ include "spark-web-proxy.fullname" . }}"
+            mountPath: "/etc/okdp/spark-web-proxy/config.yaml"
             subPath: config.yaml
             readOnly: true
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        - name: "{{ include "spark-history-web-proxy.fullname" . }}"
+        - name: "{{ include "spark-web-proxy.fullname" . }}"
           configMap:
-            name: "{{ include "spark-history-web-proxy.fullname" . }}"
+            name: "{{ include "spark-web-proxy.fullname" . }}"
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

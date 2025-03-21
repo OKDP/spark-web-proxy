@@ -23,7 +23,7 @@ import (
 
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/okdp/spark-history-web-proxy/internal/config"
+	"github.com/okdp/spark-web-proxy/internal/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

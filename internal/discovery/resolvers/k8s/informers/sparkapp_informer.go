@@ -29,10 +29,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/okdp/spark-history-web-proxy/internal/config"
-	"github.com/okdp/spark-history-web-proxy/internal/discovery"
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
-	"github.com/okdp/spark-history-web-proxy/internal/model"
+	"github.com/okdp/spark-web-proxy/internal/config"
+	"github.com/okdp/spark-web-proxy/internal/discovery"
+	log "github.com/okdp/spark-web-proxy/internal/logging"
+	"github.com/okdp/spark-web-proxy/internal/model"
 )
 
 type SparkAppInformer struct {

@@ -3,7 +3,7 @@ replicaCount: 1
 
 image:
   # -- Docker image registry.
-  repository: quay.io/okdp/spark-history-web-proxy
+  repository: quay.io/okdp/spark-web-proxy
   # -- Image pull policy.
   pullPolicy: Always
   # -- Image tag.

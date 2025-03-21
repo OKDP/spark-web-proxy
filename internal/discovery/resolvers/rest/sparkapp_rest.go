@@ -25,10 +25,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/okdp/spark-history-web-proxy/internal/constants"
-	restclient "github.com/okdp/spark-history-web-proxy/internal/discovery/resolvers/rest/client"
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
-	"github.com/okdp/spark-history-web-proxy/internal/model"
+	"github.com/okdp/spark-web-proxy/internal/constants"
+	restclient "github.com/okdp/spark-web-proxy/internal/discovery/resolvers/rest/client"
+	log "github.com/okdp/spark-web-proxy/internal/logging"
+	"github.com/okdp/spark-web-proxy/internal/model"
 )
 
 type SparkHistoryAppsClient struct {

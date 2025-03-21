@@ -22,10 +22,10 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	sparkclient "github.com/okdp/spark-history-web-proxy/internal/discovery/resolvers/rest"
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
-	"github.com/okdp/spark-history-web-proxy/internal/model"
-	"github.com/okdp/spark-history-web-proxy/internal/utils"
+	sparkclient "github.com/okdp/spark-web-proxy/internal/discovery/resolvers/rest"
+	log "github.com/okdp/spark-web-proxy/internal/logging"
+	"github.com/okdp/spark-web-proxy/internal/model"
+	"github.com/okdp/spark-web-proxy/internal/utils"
 )
 
 func ResolveSparkAppFromPod(pod *corev1.Pod) (*model.CachedSparkApp, error) {
@@ -49,10 +49,19 @@ func ResolveSparkAppFromHistory(request *http.Request, sparkHistoryBaseURL strin
 		log.Error("Unable to create new spark history client:", err)
 		return nil, err
 	}
-	appInfo, _ := sparkClient.GetApplicationInfo(appID)
+	appInfo, err := sparkClient.GetApplicationInfo(appID)
+	if err != nil {
+		log.Error("Unable to get spark application '%s' status from spark history, %w", appID, err)
+		return &model.CachedSparkApp{
+			Status: string(model.AppUnknown),
+		}, err
+	}
 	sparkAppEnv, err := sparkClient.GetEnvironment(appID)
 	if err != nil {
-		return nil, err
+		log.Error("Get the application '%s' environment properties from spark history: %w", appID, err)
+		return &model.CachedSparkApp{
+			Status: string(model.AppUnknown),
+		}, err
 	}
 	sparkDriverHost, _ := sparkAppEnv.GetProperty("spark.driver.host")
 	sparkDriverPort, _ := sparkAppEnv.GetProperty("spark.ui.port")

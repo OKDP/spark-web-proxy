@@ -1,5 +1,6 @@
 image:
-  repository: spark-history-web-proxy
+  #repository: quay.io/okdp/spark-web-proxy
+  repository: spark-web-proxy
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "0.1.0-snapshot"
@@ -21,7 +22,7 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: spark-history-web-proxy.okdp.sandbox
+    - host: spark-web-proxy.okdp.sandbox
       paths:
         - path: /
           pathType: Prefix

@@ -21,8 +21,8 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
-	log "github.com/okdp/spark-history-web-proxy/internal/logging"
-	"github.com/okdp/spark-history-web-proxy/internal/spark/proxy"
+	log "github.com/okdp/spark-web-proxy/internal/logging"
+	"github.com/okdp/spark-web-proxy/internal/spark/proxy"
 )
 
 type DefaultSparkHandler struct {

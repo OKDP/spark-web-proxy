@@ -21,7 +21,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/okdp/spark-history-web-proxy/internal/config"
+	"github.com/okdp/spark-web-proxy/internal/config"
 )
 
 func HTTPSecurity(securityConfig config.Security) []gin.HandlerFunc {

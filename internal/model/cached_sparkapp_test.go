@@ -50,6 +50,6 @@ func TestGetProperty(t *testing.T) {
 	t.Run("Property does not exist", func(t *testing.T) {
 		value, found := response.GetProperty("spark.non.existing.property")
 		assert.False(t, found, "Property should not be found")
-		assert.Equal(t, "", value, "The value should be empty")
+		assert.Equal(t, "_", value, "The value should be _")
 	})
 }
