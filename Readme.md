@@ -1,5 +1,6 @@
 [![ci](https://github.com/okdp/spark-web-proxy/actions/workflows/ci.yml/badge.svg)](https://github.com/okdp/spark-web-proxy/actions/workflows/ci.yml)
 [![release-please](https://github.com/okdp/spark-web-proxy/actions/workflows/release-please.yml/badge.svg)](https://github.com/okdp/spark-web-proxy/actions/workflows/release-please.yml)
+[![image-rebuild](https://github.com/okdp/spark-web-proxy/actions/workflows/docker-rebuild.yml/badge.svg)](https://github.com/okdp/spark-web-proxy/actions/workflows/docker-rebuild.yml)
 [![License Apache2](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 
@@ -74,4 +75,3 @@ metadata:
 ## Authentication
 
 [Spark Authentication Filter](https://github.com/OKDP/okdp-spark-auth-filter) can be applied to both Spark History Server and Spark Jobs to enable user authentication and authorization.
-

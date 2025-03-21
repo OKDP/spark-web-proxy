@@ -53,6 +53,7 @@ on:
   workflow_dispatch:
   
 permissions:
+  packages: write
   contents: write
 
 # https://docs.github.com/en/actions/using-jobs/using-concurrency
@@ -67,7 +68,22 @@ defaults:
 
 jobs:
 
-  ci:
-    name: ci
-    uses: okdp/gh-workflows/.github/workflows/helm-lint-template.yml@v1
+  run_tests:
+    name: run tests
+    uses: okdp/gh-workflows/.github/workflows/makefile-run-template.yml@v1
+    with:
+      go_version: "1.23"
+      command: "make test"
 
+  docker_test:
+    name: docker test
+    uses: okdp/gh-workflows/.github/workflows/docker-build-test-push-template.yml@v1
+    with:
+      path: "./"
+    secrets: inherit
+
+  helm_lint:
+    name: helm lint
+    uses: okdp/gh-workflows/.github/workflows/helm-lint-template.yml@v1
+    with:
+      skip_chart_test: true
