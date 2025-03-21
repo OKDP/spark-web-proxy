@@ -66,7 +66,7 @@ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --vers
 | configuration.logging.format | string | `"console"` |  |
 | configuration.logging.level | string | `"debug"` |  |
 | configuration.proxy.listenAddress | string | `"0.0.0.0"` | Specify the Proxy listen address. |
-| configuration.proxy.mode | string | `"debug"` | Specify the Server Mode. One of `debug`, `release` or `test`. |
+| configuration.proxy.mode | string | `"release"` | Specify the Server Mode. One of `debug`, `release` or `test`. |
 | configuration.proxy.port | int | `4040` | Specify the Proxy listen port. |
 | configuration.security.cors.allowCredentials | bool | `false` | Determine whether cookies and authentication credentials should be included in cross-origin requests. |
 | configuration.security.cors.allowedHeaders | list | `["Origin","Accept","Authorization","Content-Length","Content-Type"]` | List the headers that clients are allowed to include in requests. |
@@ -79,7 +79,6 @@ helm install my-release oci://quay.io/okdp/charts/spark-history-web-proxy --vers
 | configuration.spark.history.scheme | string | `"http"` | Specify the Spark History listen address scheme. |
 | configuration.spark.history.service | string | `nil` | Specify the Spark History listen kubernetes service name. |
 | configuration.spark.jobNamespaces | list | `["default"]` | List of namespaces where the spark jobs run. If empty, all namespaces will be allowed. |
-| configuration.spark.ui.port | int | `4040` | Same as spark.ui.port |
 | configuration.spark.ui.proxyBase | string | `"/sparkui"` | When the proxyBase is set to a value other than `/proxy`, disable the property `spark.ui.reverseProxy=false` in your Spark job configuration if already set. |
 | fullnameOverride | string | `""` | Overrides the release name. |
 | image.pullPolicy | string | `"Always"` | Image pull policy. |
