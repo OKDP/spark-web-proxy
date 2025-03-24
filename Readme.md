@@ -22,11 +22,11 @@ The proxy is non-intrusive and independent of any specific version of Spark Hist
 
 ## Installation
 
-To deploy the spark web proxy, refer to helm chart [README](helm/spark-web-proxy/README.md) for customization options and installation guidelines.
+To deploy the Spark Web Proxy, refer to helm chart [README](helm/spark-web-proxy/README.md) for customization options and installation guidelines.
 
 The web proxy can also be deployed as a sidecar container alongside your existing Spark History Server. Ensure to set the property `configuration.spark.service` to `localhost`.
 
-In both cases, you need to use the spark web proxy ingress instead of your spark history ingress.
+In both cases, you need to use the Spark Web Proxy ingress instead of your spark history ingress.
 
 ## Spark History and spark jobs Configuration
 
@@ -101,4 +101,6 @@ conf.set("spark.ui.port", find_available_port())
 
 ## Authentication
 
-[Spark Authentication Filter](https://github.com/OKDP/okdp-spark-auth-filter) can be applied to both Spark History Server and Spark Jobs to enable user authentication and authorization.
+The Spark Web Proxy is independent of any specific authentication mechanism. It simply forwards credentials and headers to the running Spark instances without modifying or enforcing authentication itself.
+
+This allows to use the [Spark Authentication Filter](https://github.com/OKDP/okdp-spark-auth-filter) or any other authentication solution to secure both the Spark History Server and Spark Jobs to ensure user authentication and authorization.
