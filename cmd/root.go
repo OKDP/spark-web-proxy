@@ -42,7 +42,6 @@ func init() {
 	viper.SetDefault("spark.history.service", "localhost")
 	viper.SetDefault("spark.history.port", 18080)
 
-	viper.SetDefault("spark.ui.port", 18080)
 	viper.SetDefault("spark.ui.proxyBase", "/sparkui")
 	viper.SetDefault("spark.jobNamespaces", "default")
 

@@ -22,17 +22,11 @@ The proxy is non-intrusive and independent of any specific version of Spark Hist
 
 ## Installation
 
-The web proxy can be deployed either as a sidecar container alongside your Spark History Server or as an independent helm chart.
+To deploy the spark web proxy, refer to helm chart [README](helm/spark-web-proxy/README.md) for customization options and installation guidelines.
 
-1. As a sidecar container:
+The web proxy can also be deployed as a sidecar container alongside your existing Spark History Server. Ensure to set the property `configuration.spark.service` to `localhost`.
 
-Refer to [helm/spark-history-server](https://github.com/OKDP/spark-history-server/tree/main/helm/spark-history-server) repository for guidlines and examples.
-
-2. As an independent chart:
-
-Refer to [README](helm/spark-web-proxy/README.md) for customization options and installation guidelines.
-
-In both cases, you need to use the web proxy ingress instead of your spark history ingress.
+In both cases, you need to use the spark web proxy ingress instead of your spark history ingress.
 
 ## Spark History and spark jobs Configuration
 
@@ -86,7 +80,7 @@ spec:
 
 In a client mode, the web proxy relies on [/api/v1/applications/[app-id]/environment](https://spark.apache.org/docs/latest/monitoring.html) Spark History Rest API to get the Spark driver IP and UI port and [/api/v1/applications/[app-id]](https://spark.apache.org/docs/latest/monitoring.html) to get the application status.
 
-By default, Spark does not not render the property `spark.ui.port` in the environment properties. So, you should set the property during the job submission or using a listener.
+By default, Spark does not render the property `spark.ui.port` in the environment properties. So, you should set the property during the job submission or using a listener.
 
 Here is an example of how to set the `spark.ui.port` on a jupyter notebook:
 

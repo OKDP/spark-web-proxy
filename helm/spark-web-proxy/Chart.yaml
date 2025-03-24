@@ -15,9 +15,8 @@ maintainers:
     name: idirze
     url: https://github.com/mlahouar
 sources:
-  - https://github.com/apache/spark
+  - https://github.com/OKDP/spark-web-proxy
+  - https://github.com/OKDP/spark-history-server/tree/main/helm/spark-history-server
   - https://github.com/OKDP/okdp-spark-auth-filter
   - https://github.com/OKDP/spark-images
-  - https://github.com/OKDP/spark-history-server/tree/main/helm/spark-history-server
-  - https://github.com/OKDP/spark-web-proxy
-
+  - https://github.com/apache/spark

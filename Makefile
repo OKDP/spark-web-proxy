@@ -34,7 +34,7 @@ golint:
 .PHONY: gobuild
 gobuild:
 	mkdir -p .bin/
-	CGO_ENABLED=0 go build -a -o .bin/okdp-server main.go
+	CGO_ENABLED=0 go build -a -o .bin/spark-web-proxy main.go
 
 .PHONY: gocompile
 gocompile:
