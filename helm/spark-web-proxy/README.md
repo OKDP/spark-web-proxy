@@ -116,9 +116,9 @@ helm install my-release oci://quay.io/okdp/charts/spark-web-proxy --version 0.1.
 
 ## Source Code
 
-* <https://github.com/apache/spark>
+* <https://github.com/OKDP/spark-web-proxy>
+* <https://github.com/OKDP/spark-history-server/tree/main/helm/spark-history-server>
 * <https://github.com/OKDP/okdp-spark-auth-filter>
 * <https://github.com/OKDP/spark-images>
-* <https://github.com/OKDP/spark-history-server/tree/main/helm/spark-history-server>
-* <https://github.com/OKDP/spark-web-proxy>
+* <https://github.com/apache/spark>
 
