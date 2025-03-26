@@ -1,9 +1,8 @@
 image:
-  #repository: quay.io/okdp/spark-web-proxy
-  repository: spark-web-proxy
+  repository: quay.io/okdp/spark-web-proxy
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.0-snapshot"
+  tag: "0.1.0"
 
 configuration:
   spark:

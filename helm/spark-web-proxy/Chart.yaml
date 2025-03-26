@@ -3,7 +3,7 @@ name: spark-web-proxy
 description: Helm chart for spark-web-proxy
 type: application
 version: 0.1.0
-appVersion: "0.1.0-snapshot"
+appVersion: "0.1.0"
 keywords:
   - spark
   - spark-history
