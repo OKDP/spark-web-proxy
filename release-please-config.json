@@ -2,7 +2,7 @@
   "separate-pull-requests": true,
   "include-v-in-tag": true,
   "packages": {
-    "helm/spark-history-web-proxy": {
+    "helm/spark-web-proxy": {
       "component": "helm-spark-web-proxy",
       "initial-version": "0.1.0",
       "extra-label": "helm",
