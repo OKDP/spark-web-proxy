@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package controllers provides HTTP handlers for application endpoints
+// such as health and readiness checks.
 package controllers
 
 import (
@@ -22,12 +24,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Healthz handles liveness probe requests and reports whether the service
+// is running.
 func Healthz(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ready",
 	})
 }
 
+// Readiness handles readiness probe requests and reports whether the service
+// is ready to accept traffic.
 func Readiness(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ready",

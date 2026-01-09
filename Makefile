@@ -20,8 +20,8 @@ update: build goupdate
 
 .PHONY: tools
 tools:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.2
-	go install golang.org/x/tools/cmd/goimports@v0.28.0
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0
+	go install golang.org/x/tools/cmd/goimports@v0.40.0
 
 .PHONY: gofmt
 gofmt:

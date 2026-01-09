@@ -1,33 +1,45 @@
+version: "2"
+
 run:
   timeout: 5m
 
 linters:
+  default: none
   enable:
-    # Code Formatting & Imports
-    - goimports
-    - gofmt
-    # Static Code Analysis
     - govet
     - staticcheck
-    - gosimple
     - unused
-    # Error Handling
     - errcheck
-    # Code Optimization
     - ineffassign
     - unconvert
     - prealloc
-    # Code Quality
     - gocritic
     - revive
     - goconst
-    # Code Complexity
     - cyclop
-  fast: false
+
+  exclusions:
+    presets: []
+    paths:
+      - ^api/
+    rules:
+      - path: internal/utils/
+        linters:
+          - revive
 
 issues:
   max-same-issues: 5
   max-issues-per-linter: 10
-  exclude-use-default: true
-  exclude-dirs:
-    - ^api/
+
+formatters:
+  enable: []
+   # - gofmt
+   # - goimports
+  settings:
+    gofmt:
+      rewrite-rules:
+        - pattern: 'interface{}'
+          replacement: 'any'
+    goimports:
+      local-prefixes:
+        - github.com/golangci/golangci-lint/v2

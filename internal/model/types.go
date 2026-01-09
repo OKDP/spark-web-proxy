@@ -14,14 +14,21 @@
  *    limitations under the License.
  */
 
+// Package model defines domain models used across the application.
 package model
 
+// SparkAppStatus represents the lifecycle status of a Spark application.
 type SparkAppStatus string
 
 const (
-	AppPending   SparkAppStatus = "Pending"
-	AppRunning   SparkAppStatus = "Running"
+	// AppPending indicates that the Spark application is pending execution.
+	AppPending SparkAppStatus = "Pending"
+	// AppRunning indicates that the Spark application is currently running.
+	AppRunning SparkAppStatus = "Running"
+	// AppSucceeded indicates that the Spark application has completed successfully.
 	AppSucceeded SparkAppStatus = "Succeeded"
-	AppFailed    SparkAppStatus = "Failed"
-	AppUnknown   SparkAppStatus = "Unknown"
+	// AppFailed indicates that the Spark application has failed.
+	AppFailed SparkAppStatus = "Failed"
+	// AppUnknown indicates that the Spark application status is unknown.
+	AppUnknown SparkAppStatus = "Unknown"
 )

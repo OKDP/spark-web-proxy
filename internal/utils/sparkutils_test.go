@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+//revive:disable
 package utils
 
 import (

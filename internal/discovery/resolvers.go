@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package discovery provides utilities for discovering Spark applications
+// from Kubernetes pods or the Spark History Server.
 package discovery
 
 import (
@@ -28,6 +30,8 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/utils"
 )
 
+// ResolveSparkAppFromPod resolves a Spark application instance from a Kubernetes
+// driver pod and registers it in the application model.
 func ResolveSparkAppFromPod(pod *corev1.Pod) (*model.SparkAppInstance, error) {
 	sparkUIURL := fmt.Sprintf("http://%s:%d", pod.Status.PodIP, utils.GetSparkUIPort(pod))
 	sparkApp := &model.SparkAppInstance{
@@ -44,6 +48,8 @@ func ResolveSparkAppFromPod(pod *corev1.Pod) (*model.SparkAppInstance, error) {
 	return sparkApp, nil
 }
 
+// ResolveSparkAppFromHistory resolves a Spark application instance using the
+// Spark History Server REST API.
 func ResolveSparkAppFromHistory(request *http.Request, sparkHistoryBaseURL string, appID string) (*model.SparkAppInstance, error) {
 	sparkClient, err := sparkclient.NewSparkRestClient(request, sparkHistoryBaseURL)
 	if err != nil {
@@ -87,6 +93,8 @@ func ResolveSparkAppFromHistory(request *http.Request, sparkHistoryBaseURL strin
 	return sparkApp, err
 }
 
+// podStartTimeEpoch returns the pod start time as a Unix epoch timestamp
+// in milliseconds, or -1 if the start time is not available.
 func podStartTimeEpoch(pod *corev1.Pod) int64 {
 	if pod.Status.StartTime != nil {
 		return pod.Status.StartTime.UnixMilli()

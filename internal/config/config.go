@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package config provides application configuration loading and access
+// using Viper, including support for dynamic reloads.
 package config
 
 import (
@@ -27,6 +29,7 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/utils"
 )
 
+// ApplicationConfig represents the root configuration of the application.
 type ApplicationConfig struct {
 	Proxy    Proxy    `mapstructure:"proxy"`
 	Spark    Spark    `mapstructure:"spark"`
@@ -34,28 +37,28 @@ type ApplicationConfig struct {
 	Logging  Logging  `mapstructure:"logging"`
 }
 
-// Server configuration
+// Proxy defines the reverse proxy server configuration.
 type Proxy struct {
 	ListenAddress string `mapstructure:"listenAddress"`
 	Port          int    `mapstructure:"port"`
 	Mode          string `mapstructure:"mode"`
 }
 
-// Spark configuration
+// Spark defines Spark-related configuration.
 type Spark struct {
 	History       History  `mapstructure:"history"`
 	UI            UI       `mapstructure:"ui"`
 	JobNamespaces []string `json:"jobNamespaces"`
 }
 
-// Spark History configuration
+// History defines Spark History Server configuration.
 type History struct {
 	Scheme  string `yaml:"scheme"`
 	Service string `yaml:"service"`
 	Port    int    `yaml:"port"`
 }
 
-// Spark UI configuration
+// UI defines Spark UI configuration
 type UI struct {
 	ProxyBase string `yaml:"proxyBase"`
 }
@@ -121,6 +124,9 @@ func GetAppConfig() *ApplicationConfig {
 	return instance
 }
 
+// GetSparkHistoryBaseURL returns the base URL of the Spark History Server
+// constructed from the configured scheme, service, and port.
+// It validates the resulting URL and panics if it is invalid.
 func (c ApplicationConfig) GetSparkHistoryBaseURL() string {
 	sparkHistoryBaseURL := fmt.Sprintf("%s://%s:%d", c.Spark.History.Scheme,
 		c.Spark.History.Service,

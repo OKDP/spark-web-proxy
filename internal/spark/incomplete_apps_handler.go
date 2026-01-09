@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package spark provides handlers and response rewriting logic for Spark UI
+// and Spark History endpoints proxied through the application.
 package spark
 
 import (
@@ -32,20 +34,30 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/spark/proxy"
 )
 
+// sparkVersionRe matches the Spark version span in Spark UI/History HTML pages
+// and captures the major version number (e.g., "3" from "3.3.1").
 var sparkVersionRe = regexp.MustCompile(`(?is)<span[^>]*class=["'][^"']*\bversion\b[^"']*["'][^>]*>\s*([0-9]+)`)
 
+// IncompleteAppsHandler implements proxy.ReverseProxyHandler and injects the
+// required scripts into the Spark History "incomplete applications" page.
 type IncompleteAppsHandler struct {
 }
 
+// NewIncompleteAppsHandler creates a reverse proxy configured to handle
+// Spark History incomplete applications pages.
 func NewIncompleteAppsHandler(upstreamURL *url.URL, appID string) *proxy.SparkReverseProxy {
 	return proxy.NewSparkReverseProxy(IncompleteAppsHandler{}, upstreamURL, appID)
 }
 
+// ServeSparkHistoryIncompleteApps proxies Spark History incomplete applications
+// requests to the configured upstream.
 func ServeSparkHistoryIncompleteApps(c *gin.Context, upstreamURL *url.URL, appID string) {
 	NewIncompleteAppsHandler(upstreamURL, appID).
 		ServeHTTP(c.Writer, c.Request)
 }
 
+// ModifyRequest returns a function that rewrites the incoming request URL to
+// target the provided upstream URL.
 func (c IncompleteAppsHandler) ModifyRequest(upstreamURL *url.URL) func(*http.Request) {
 	return func(req *http.Request) {
 		req.URL.Scheme = upstreamURL.Scheme
@@ -57,6 +69,8 @@ func (c IncompleteAppsHandler) ModifyRequest(upstreamURL *url.URL) func(*http.Re
 	}
 }
 
+// ModifyResponse returns a function that rewrites the Spark History incomplete
+// applications page when it contains the "No incomplete applications found!" message.
 func (c IncompleteAppsHandler) ModifyResponse() func(*http.Response) error {
 	return func(resp *http.Response) error {
 		resp.TransferEncoding = []string{"identity"}
@@ -66,6 +80,8 @@ func (c IncompleteAppsHandler) ModifyResponse() func(*http.Response) error {
 	}
 }
 
+// handleIncompleteApplicationsPage injects the Spark History page scripts when
+// the response is an HTML "no incomplete applications" page.
 func handleIncompleteApplicationsPage(resp *http.Response, limit int) error {
 
 	log.Debug("Handle incomplete applications pages")
@@ -150,7 +166,12 @@ func readBodyMaybeGunzip(resp *http.Response) (plain []byte, raw []byte, isGzip 
 	if err != nil {
 		return nil, nil, true, err
 	}
-	defer gr.Close()
+
+	defer func() {
+		if err := gr.Close(); err != nil {
+			log.Warn("failed to close gzip reader: %v", err)
+		}
+	}()
 
 	plain, err = io.ReadAll(gr)
 	if err != nil {

@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package sparkclient provides a lightweight HTTP client for interacting
+// with the Spark History Server APIs.
 package sparkclient
 
 import (
@@ -25,11 +27,15 @@ import (
 	log "github.com/okdp/spark-web-proxy/internal/logging"
 )
 
+// SparkClient wraps an HTTP client and request used to communicate
+// with the Spark History Server.
 type SparkClient struct {
 	Client  *http.Client
 	Request *http.Request
 }
 
+// NewSparkClient creates a new SparkClient for forwarding an incoming HTTP
+// request to the Spark History Server applications API.
 func NewSparkClient(request *http.Request, sparkHistoryBaseURL string) (*SparkClient, error) {
 	jar, _ := cookiejar.New(nil)
 	apiURL := fmt.Sprintf("%s%s", sparkHistoryBaseURL, constants.SparkAppsEndpoint)

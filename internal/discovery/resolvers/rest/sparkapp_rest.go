@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package sparkclient provides a REST client for interacting with the Spark
+// History Server API.
 package sparkclient
 
 import (
@@ -28,10 +30,13 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/model"
 )
 
+// SparkRestClient provides high-level methods to query the Spark History Server API.
 type SparkRestClient struct {
 	*restclient.SparkClient
 }
 
+// NewSparkRestClient creates a SparkRestClient for forwarding an incoming HTTP request
+// to the Spark History Server API.
 func NewSparkRestClient(request *http.Request, sparkHistoryBaseURL string) (*SparkRestClient, error) {
 	client, err := restclient.NewSparkClient(request, sparkHistoryBaseURL)
 	return &SparkRestClient{
@@ -39,6 +44,7 @@ func NewSparkRestClient(request *http.Request, sparkHistoryBaseURL string) (*Spa
 	}, err
 }
 
+// GetApplications retrieves the list of applications from the Spark History Server.
 func (c *SparkRestClient) GetApplications() (*[]model.SparkApp, error) {
 
 	log.Debug("Get the list of spark history applications from URL: %s", c.Request.URL.String())
@@ -51,6 +57,7 @@ func (c *SparkRestClient) GetApplications() (*[]model.SparkApp, error) {
 	return doResponse[[]model.SparkApp](resp, "")
 }
 
+// GetApplicationInfo retrieves application details for the given application ID.
 func (c *SparkRestClient) GetApplicationInfo(appID string) (*model.SparkApp, error) {
 	c.Request.URL.Path = fmt.Sprintf("%s/%s", constants.SparkAppsEndpoint, appID)
 
@@ -64,6 +71,7 @@ func (c *SparkRestClient) GetApplicationInfo(appID string) (*model.SparkApp, err
 	return doResponse[model.SparkApp](resp, appID)
 }
 
+// GetEnvironment retrieves environment properties for the given application ID.
 func (c *SparkRestClient) GetEnvironment(appID string) (*model.SparkAppEnvironment, error) {
 	c.Request.URL.Path = fmt.Sprintf("%s/%s/%s", constants.SparkAppsEndpoint, appID, "environment")
 
@@ -77,6 +85,7 @@ func (c *SparkRestClient) GetEnvironment(appID string) (*model.SparkAppEnvironme
 	return doResponse[model.SparkAppEnvironment](resp, appID)
 }
 
+// doResponse validates that the upstream response contains JSON and decodes it into T.
 func doResponse[T any](response *http.Response, appID string) (*T, error) {
 	var object T
 	ct := strings.ToLower(response.Header.Get("Content-Type"))

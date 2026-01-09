@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package informers provides Kubernetes informers used to discover and track
+// Spark driver pods and their associated application metadata.
 package informers
 
 import (
@@ -35,11 +37,14 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/model"
 )
 
+// SparkAppInformer watches Kubernetes namespaces for Spark driver pods and
+// maintains an in-memory view of running Spark applications.
 type SparkAppInformer struct {
 	namespaces []string
 	ui         config.UI
 }
 
+// NewSparkAppInformer creates a SparkAppInformer using the application configuration.
 func NewSparkAppInformer(config *config.ApplicationConfig) *SparkAppInformer {
 	return &SparkAppInformer{
 		namespaces: config.Spark.JobNamespaces,
@@ -47,6 +52,7 @@ func NewSparkAppInformer(config *config.ApplicationConfig) *SparkAppInformer {
 	}
 }
 
+// WatchSparkApps starts watching Spark driver pods in all configured namespaces.
 func (i SparkAppInformer) WatchSparkApps(clientset *kubernetes.Clientset) {
 	namespaces := i.namespaces
 	if len(namespaces) == 0 {
@@ -58,6 +64,7 @@ func (i SparkAppInformer) WatchSparkApps(clientset *kubernetes.Clientset) {
 	}
 }
 
+// WatchNamespaceSparkApps starts a Spark driver pod informer for a single namespace.
 func (i SparkAppInformer) WatchNamespaceSparkApps(clientset *kubernetes.Clientset, namespace string) {
 
 	log.Info("Running spark app informer on the following namespaces: %s", func() string {
@@ -78,8 +85,10 @@ func (i SparkAppInformer) WatchNamespaceSparkApps(clientset *kubernetes.Clientse
 
 	// Register event handlers
 	registration, err := podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    i.sparkAppAddedOrUpdated,
-		UpdateFunc: func(_, newObj interface{}) { i.sparkAppAddedOrUpdated(newObj) },
+		AddFunc: i.sparkAppAddedOrUpdated,
+		UpdateFunc: func(_, newObj interface{}) {
+			i.sparkAppAddedOrUpdated(newObj)
+		},
 		DeleteFunc: i.sparkAppDeleted,
 	})
 

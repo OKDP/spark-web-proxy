@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+// Package utils provides Kubernetes pod–related helper functions used by the application.
 package utils
 
 import (
@@ -22,6 +23,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// GetSparkUIPort returns the Spark UI port exposed by the given pod.
+// It looks for a container port whose name contains "ui" (case-insensitive)
+// and falls back to port 4040 if none is found.
 func GetSparkUIPort(pod *corev1.Pod) int32 {
 	for _, container := range pod.Spec.Containers {
 		for _, port := range container.Ports {
@@ -33,6 +37,9 @@ func GetSparkUIPort(pod *corev1.Pod) int32 {
 	return 4040
 }
 
+// GetSparkAppID returns the Spark application ID from the given pod.
+// The value is read from the SPARK_APPLICATION_ID environment variable.
+// If the variable is not found, "-1" is returned.
 func GetSparkAppID(pod *corev1.Pod) string {
 	for _, container := range pod.Spec.Containers {
 		for _, envVar := range container.Env {

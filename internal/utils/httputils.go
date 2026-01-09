@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+// Package utils provides HTTP-related helper functions used by the application.
 package utils
 
 import (

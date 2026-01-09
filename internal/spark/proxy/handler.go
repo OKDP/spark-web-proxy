@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package proxy provides reverse-proxy helpers and error handlers used
+// to route requests to Spark UIs and Spark History.
 package proxy
 
 import (
@@ -30,6 +32,8 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/utils"
 )
 
+// ReverseProxyHandler defines hooks used to customize the reverse proxy
+// request and response processing.
 type ReverseProxyHandler interface {
 	ModifyRequest(upstreamURL *url.URL) func(*http.Request)
 	ModifyResponse() func(*http.Response) error
@@ -62,6 +66,10 @@ func DefaultErrorHandler(appID string) func(http.ResponseWriter, *http.Request, 
 	}
 }
 
+// SparkUIErrorHandler returns an error handler tailored for Spark UI requests.
+// It handles expected cancellation errors quietly, supports browser redirects
+// for kill actions, and falls back to Spark History when the Spark UI becomes
+// unavailable.
 func SparkUIErrorHandler(fromURL *url.URL, appID string) func(http.ResponseWriter, *http.Request, error) {
 	return func(rw http.ResponseWriter, req *http.Request, err error) {
 		if isCancelErr(err) {

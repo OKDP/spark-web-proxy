@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package spark provides HTTP handlers and proxy wiring for serving Spark UI
+// and Spark History endpoints through the reverse proxy.
 package spark
 
 import (
@@ -25,24 +27,33 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/spark/proxy"
 )
 
+// DefaultSparkHandler implements proxy.ReverseProxyHandler for Spark UI and
+// Spark History requests.
 type DefaultSparkHandler struct {
 }
 
+// NewDefaultSparkHandler creates a Spark reverse proxy configured with the
+// default request/response rewriting behavior.
 func NewDefaultSparkHandler(upstreamURL *url.URL, appID string) *proxy.SparkReverseProxy {
 	return proxy.NewSparkReverseProxy(DefaultSparkHandler{}, upstreamURL, appID)
 }
 
+// ServeSparkHistory proxies Spark History requests to the configured upstream.
 func ServeSparkHistory(c *gin.Context, upstreamURL *url.URL, appID string) {
 	NewDefaultSparkHandler(upstreamURL, appID).
 		ServeHTTP(c.Writer, c.Request)
 }
 
+// ServeSparkUI proxies Spark UI requests to the configured upstream and applies
+// Spark UI–specific error handling (for redirects and fallback behavior).
 func ServeSparkUI(c *gin.Context, upstreamURL *url.URL, appID string) {
 	NewDefaultSparkHandler(upstreamURL, appID).
 		WithSparkUIErrorHandler(c.Request.URL).
 		ServeHTTP(c.Writer, c.Request)
 }
 
+// ModifyRequest returns a function that rewrites the incoming request URL to
+// target the provided upstream URL.
 func (c DefaultSparkHandler) ModifyRequest(upstreamURL *url.URL) func(*http.Request) {
 	return func(req *http.Request) {
 		req.URL.Scheme = upstreamURL.Scheme
@@ -54,6 +65,8 @@ func (c DefaultSparkHandler) ModifyRequest(upstreamURL *url.URL) func(*http.Requ
 	}
 }
 
+// ModifyResponse returns a function that rewrites redirect Location headers so
+// they remain relative when responses pass through the reverse proxy.
 func (c DefaultSparkHandler) ModifyResponse() func(*http.Response) error {
 	return func(resp *http.Response) error {
 		if resp.StatusCode == http.StatusFound {
