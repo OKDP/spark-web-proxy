@@ -17,13 +17,10 @@
 package sparkclient
 
 import (
-	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strconv"
+	"strings"
 
 	"github.com/okdp/spark-web-proxy/internal/constants"
 	restclient "github.com/okdp/spark-web-proxy/internal/discovery/resolvers/rest/client"
@@ -31,82 +28,73 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/model"
 )
 
-type SparkHistoryAppsClient struct {
-	*restclient.SparkHistoryClient
+type SparkRestClient struct {
+	*restclient.SparkClient
 }
 
-func NewSparkHistoryAppsClient(request *http.Request, sparkHistoryBaseURL string) (*SparkHistoryAppsClient, error) {
-	client, err := restclient.NewSparkHistoryClient(request, sparkHistoryBaseURL)
-	return &SparkHistoryAppsClient{
+func NewSparkRestClient(request *http.Request, sparkHistoryBaseURL string) (*SparkRestClient, error) {
+	client, err := restclient.NewSparkClient(request, sparkHistoryBaseURL)
+	return &SparkRestClient{
 		client,
 	}, err
 }
 
-func (c *SparkHistoryAppsClient) GetApplicationInfo(appID string) (*model.HistorySparkApp, error) {
-	c.Request.URL.Path = fmt.Sprintf("%s/%s", constants.SparkHistoryAppsEndpoint, appID)
+func (c *SparkRestClient) GetApplications() (*[]model.SparkApp, error) {
+
+	log.Debug("Get the list of spark history applications from URL: %s", c.Request.URL.String())
+
+	resp, err := c.Client.Do(c.Request)
+	if err != nil {
+		return nil, err
+	}
+
+	return doResponse[[]model.SparkApp](resp, "")
+}
+
+func (c *SparkRestClient) GetApplicationInfo(appID string) (*model.SparkApp, error) {
+	c.Request.URL.Path = fmt.Sprintf("%s/%s", constants.SparkAppsEndpoint, appID)
 
 	log.Debug("Get the application status '%s' from URL: %s", appID, c.Request.URL.String())
 
 	resp, err := c.Client.Do(c.Request)
 	if err != nil {
-		log.Error("Failed to get status for application '%s' from URL %s: %w", appID, c.Request.URL.Path, err)
 		return nil, err
 	}
 
-	return doResponse[model.HistorySparkApp](resp, appID)
+	return doResponse[model.SparkApp](resp, appID)
 }
 
-func (c *SparkHistoryAppsClient) GetEnvironment(appID string) (*model.HistorySparkAppEnvironment, error) {
-	c.Request.URL.Path = fmt.Sprintf("%s/%s/%s", constants.SparkHistoryAppsEndpoint, appID, "environment")
+func (c *SparkRestClient) GetEnvironment(appID string) (*model.SparkAppEnvironment, error) {
+	c.Request.URL.Path = fmt.Sprintf("%s/%s/%s", constants.SparkAppsEndpoint, appID, "environment")
 
 	log.Debug("Get the application '%s' environment properties from URL: %s", appID, c.Request.URL.String())
 
 	resp, err := c.Client.Do(c.Request)
 	if err != nil {
-		log.Error("Failed to get environment properties for application '%s' from URL %s: %w", appID, c.Request.URL.String(), err)
 		return nil, err
 	}
 
-	return doResponse[model.HistorySparkAppEnvironment](resp, appID)
+	return doResponse[model.SparkAppEnvironment](resp, appID)
 }
 
 func doResponse[T any](response *http.Response, appID string) (*T, error) {
 	var object T
-	gzReader, err := gzip.NewReader(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer gzReader.Close()
+	ct := strings.ToLower(response.Header.Get("Content-Type"))
 
-	// Read all decompressed content
-	body, err := io.ReadAll(gzReader)
-	if err != nil {
-		log.Error("Failed to read body response for application '%s': %w", appID, err)
-		return nil, err
+	log.Debug("Upstream response: status=%d content-encoding=%q content-type=%q content-length=%q",
+		response.StatusCode, response.Header.Get("Content-Encoding"), response.Header.Get("Content-Type"), response.Header.Get("Content-Length"),
+	)
+
+	// Not JSON content-type: log snippet and fail fast
+	if !strings.Contains(ct, "application/json") && !strings.Contains(ct, "text/json") {
+		return nil, fmt.Errorf("spark UI is initializing")
 	}
 
-	err = json.Unmarshal([]byte(string(body)), &object)
-	if err != nil {
-		log.Error("Failed to parse body response for application '%s': %w", appID, err)
-	}
-
-	// Re-compress the modified body
-	var buf bytes.Buffer
-	gzWriter := gzip.NewWriter(&buf)
-	_, err = gzWriter.Write(body)
-	if err != nil {
-		log.Error("Failed to write body response for application '%s': %w", appID, err)
+	if err := json.NewDecoder(response.Body).Decode(&object); err != nil {
+		log.Error("Failed to decode JSON for '%s': %v", appID, err)
 		return nil, err
 	}
-	err = gzWriter.Close()
-	if err != nil {
-		log.Error("Failed to close body response for application '%s': %w", appID, err)
-		return nil, err
-	}
-	response.Body = io.NopCloser(&buf)
-	response.ContentLength = int64(buf.Len())
-	response.Header.Set("Content-Length", strconv.Itoa(buf.Len()))
-	response.Header.Set("Content-Encoding", "gzip")
 
 	return &object, nil
+
 }

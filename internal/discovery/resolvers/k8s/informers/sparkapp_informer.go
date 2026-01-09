@@ -84,7 +84,7 @@ func (i SparkAppInformer) WatchNamespaceSparkApps(clientset *kubernetes.Clientse
 	})
 
 	if err != nil {
-		log.Error("Failed to add spark app event handler: %v", err)
+		log.Error("Failed to add spark app event handler: %+v", err)
 		return
 	}
 

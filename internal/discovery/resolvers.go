@@ -28,14 +28,15 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/utils"
 )
 
-func ResolveSparkAppFromPod(pod *corev1.Pod) (*model.CachedSparkApp, error) {
+func ResolveSparkAppFromPod(pod *corev1.Pod) (*model.SparkAppInstance, error) {
 	sparkUIURL := fmt.Sprintf("http://%s:%d", pod.Status.PodIP, utils.GetSparkUIPort(pod))
-	sparkApp := &model.CachedSparkApp{
-		BaseURL:   sparkUIURL,
-		PodName:   pod.Name,
-		AppID:     utils.GetSparkAppID(pod),
-		Namespace: pod.Namespace,
-		Status:    string(pod.Status.Phase),
+	sparkApp := &model.SparkAppInstance{
+		BaseURL:        sparkUIURL,
+		PodName:        pod.Name,
+		AppID:          utils.GetSparkAppID(pod),
+		Namespace:      pod.Namespace,
+		Status:         string(pod.Status.Phase),
+		StartTimeEpoch: podStartTimeEpoch(pod),
 	}
 
 	model.AddOrUpdateSparkApp(sparkApp)
@@ -43,23 +44,23 @@ func ResolveSparkAppFromPod(pod *corev1.Pod) (*model.CachedSparkApp, error) {
 	return sparkApp, nil
 }
 
-func ResolveSparkAppFromHistory(request *http.Request, sparkHistoryBaseURL string, appID string) (*model.CachedSparkApp, error) {
-	sparkClient, err := sparkclient.NewSparkHistoryAppsClient(request, sparkHistoryBaseURL)
+func ResolveSparkAppFromHistory(request *http.Request, sparkHistoryBaseURL string, appID string) (*model.SparkAppInstance, error) {
+	sparkClient, err := sparkclient.NewSparkRestClient(request, sparkHistoryBaseURL)
 	if err != nil {
-		log.Error("Unable to create new spark history client:", err)
+		log.Error("Unable to create new spark history client: %+v", err)
 		return nil, err
 	}
 	appInfo, err := sparkClient.GetApplicationInfo(appID)
 	if err != nil {
-		log.Error("Unable to get spark application '%s' status from spark history, %w", appID, err)
-		return &model.CachedSparkApp{
+		log.Error("Unable to get spark application '%s' status from spark history, %+v", appID, err)
+		return &model.SparkAppInstance{
 			Status: string(model.AppUnknown),
 		}, err
 	}
 	sparkAppEnv, err := sparkClient.GetEnvironment(appID)
 	if err != nil {
-		log.Error("Get the application '%s' environment properties from spark history: %w", appID, err)
-		return &model.CachedSparkApp{
+		log.Error("Failed to get the application '%s' environment properties from spark history: %+v", appID, err)
+		return &model.SparkAppInstance{
 			Status: string(model.AppUnknown),
 		}, err
 	}
@@ -70,7 +71,7 @@ func ResolveSparkAppFromHistory(request *http.Request, sparkHistoryBaseURL strin
 	sparkAppNamespace, _ := sparkAppEnv.GetProperty("spark.kubernetes.namespace")
 	sparkUIBaseURL := fmt.Sprintf("http://%s:%s", sparkDriverHost, sparkDriverPort)
 
-	sparkApp := &model.CachedSparkApp{
+	sparkApp := &model.SparkAppInstance{
 		BaseURL:   sparkUIBaseURL,
 		PodName:   sparkAppName,
 		AppID:     sparkAppID,
@@ -84,4 +85,11 @@ func ResolveSparkAppFromHistory(request *http.Request, sparkHistoryBaseURL strin
 		model.AddOrUpdateSparkApp(sparkApp)
 	}
 	return sparkApp, err
+}
+
+func podStartTimeEpoch(pod *corev1.Pod) int64 {
+	if pod.Status.StartTime != nil {
+		return pod.Status.StartTime.UnixMilli()
+	}
+	return -1
 }

@@ -24,7 +24,7 @@ import (
 
 func TestGetProperty(t *testing.T) {
 	// Define a sample SparkHistoryEnvironmentResponse
-	response := HistorySparkAppEnvironment{
+	response := SparkAppEnvironment{
 		SparkProperties: [][]string{
 			{"spark.acls.enable", "true"},
 			{"spark.app.id", "spark-9adcb03756d042de8f2f5c7deb8715b3"},

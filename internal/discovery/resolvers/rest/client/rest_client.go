@@ -25,19 +25,23 @@ import (
 	log "github.com/okdp/spark-web-proxy/internal/logging"
 )
 
-type SparkHistoryClient struct {
+type SparkClient struct {
 	Client  *http.Client
 	Request *http.Request
 }
 
-func NewSparkHistoryClient(request *http.Request, sparkHistoryBaseURL string) (*SparkHistoryClient, error) {
+func NewSparkClient(request *http.Request, sparkHistoryBaseURL string) (*SparkClient, error) {
 	jar, _ := cookiejar.New(nil)
-	apiURL := fmt.Sprintf("%s%s", sparkHistoryBaseURL, constants.SparkHistoryAppsEndpoint)
+	apiURL := fmt.Sprintf("%s%s", sparkHistoryBaseURL, constants.SparkAppsEndpoint)
 	req, err := http.NewRequest(request.Method, apiURL, nil)
 	if err != nil {
-		log.Error("failed to create request: %w", err)
+		log.Error("failed to create request: %+v", err)
 		return nil, err
 	}
+
+	// Forward query parameters
+	req.URL.RawQuery = request.URL.RawQuery
+
 	// Copy headers from the original request
 	for key, values := range request.Header {
 		for _, value := range values {
@@ -48,7 +52,12 @@ func NewSparkHistoryClient(request *http.Request, sparkHistoryBaseURL string) (*
 	for _, cookie := range request.Cookies() {
 		req.AddCookie(cookie)
 	}
-	return &SparkHistoryClient{
+
+	// Disable compression for API calls
+	req.Header.Del("Accept-Encoding")
+	req.Header.Set("Accept-Encoding", "identity")
+
+	return &SparkClient{
 		Client:  &http.Client{Jar: jar},
 		Request: req,
 	}, nil

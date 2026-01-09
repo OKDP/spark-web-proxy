@@ -17,8 +17,9 @@
 package constants
 
 const (
-	SparkHistoryBase         = "/history"
-	SparkHistoryAppsEndpoint = "/api/v1/applications"
-	HealthzURI               = "/healthz"
-	ReadinessURI             = "/readiness"
+	SparkHistoryBase  = "/history"
+	SparkAppsEndpoint = "/api/v1/applications"
+	HealthzURI        = "/healthz"
+	ReadinessURI      = "/readiness"
+	True              = "true"
 )

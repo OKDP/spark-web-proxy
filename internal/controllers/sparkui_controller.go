@@ -46,7 +46,7 @@ func NewSparkUIController(config *config.ApplicationConfig) *SparkUIController {
 	}
 }
 
-func (r SparkUIController) HandleLiveApp(c *gin.Context) {
+func (r SparkUIController) HandleRunningApp(c *gin.Context) {
 	appID := c.Param("appID")
 	sparkAppPath := strings.TrimPrefix(c.Param("path"), "/")
 

@@ -17,7 +17,10 @@
 package proxy
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -50,6 +53,10 @@ type ReverseProxyHandler interface {
 //     the error and sends the appropriate response back to the client.
 func DefaultErrorHandler(appID string) func(http.ResponseWriter, *http.Request, error) {
 	return func(rw http.ResponseWriter, req *http.Request, err error) {
+		if isCancelErr(err) {
+			log.Debug("Request canceled for app '%s' url=%s: %v", appID, req.URL.String(), err)
+			return
+		}
 		log.Error("An error was occured when accessing the application '%s' at URL: %s, \ndetails: %+v", appID, req.URL.String(), err)
 		http.Error(rw, fmt.Sprintf("An error was occured when accessing the application '%s' at URL: %s, %s", appID, req.URL.String(), err.Error()), http.StatusBadGateway)
 	}
@@ -57,6 +64,10 @@ func DefaultErrorHandler(appID string) func(http.ResponseWriter, *http.Request, 
 
 func SparkUIErrorHandler(fromURL *url.URL, appID string) func(http.ResponseWriter, *http.Request, error) {
 	return func(rw http.ResponseWriter, req *http.Request, err error) {
+		if isCancelErr(err) {
+			log.Debug("Request canceled for app '%s' url=%s: %v", appID, req.URL.String(), err)
+			return
+		}
 		if strings.Contains(fromURL.Path, "/kill") && utils.IsBrowserRequest(req) {
 			previousPage := utils.CleanKillURLPath(fromURL.Path)
 			log.Info("A spark job or stage kill was received '%s' for application '%s', redirecting to previous page: %s", fromURL.Path, appID, previousPage)
@@ -70,4 +81,34 @@ func SparkUIErrorHandler(fromURL *url.URL, appID string) func(http.ResponseWrite
 		rw.Header().Set("Location", fromURL.Path)
 		rw.WriteHeader(http.StatusFound)
 	}
+}
+
+// isCancelErr reports whether the given error is caused by a request
+// cancellation or timeout rather than a real upstream failure.
+//
+// This typically happens when:
+//   - the client (browser) closes the connection
+//   - the user navigates away or refreshes the page
+//   - the request context is canceled by Gin / net/http
+//   - a request times out while waiting for a response
+//
+// These errors are expected in reverse proxies and should usually be
+// logged at debug or warn level, not as hard errors.
+func isCancelErr(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	// Context canceled by client disconnect or request abort
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+
+	// Network timeout (common when client disconnects mid-stream)
+	var ne net.Error
+	if errors.As(err, &ne) && ne.Timeout() {
+		return true
+	}
+
+	return false
 }
