@@ -18,6 +18,7 @@ package utils
 
 import (
 	"regexp"
+	"time"
 )
 
 // Function to clean the Spark URL job or stage kill path
@@ -28,4 +29,57 @@ func CleanKillURLPath(path string) string {
 		return matches[1]
 	}
 	return path
+}
+
+// FormatSparkTime converts an epoch timestamp in milliseconds to the
+// Spark History Server time format.
+//
+// The returned format matches Spark's UI and REST API expectations:
+//
+//	YYYY-MM-DDTHH:mm:ss.SSSGMT
+//
+// Example:
+//
+//	epochMillis: 1767710303938
+//	output:      "2026-01-06T14:38:23.938GMT"
+//
+// The time is always formatted in UTC (GMT).
+func FormatSparkTime(epochMillis int64) string {
+	return time.UnixMilli(epochMillis).
+		UTC().
+		Format("2006-01-02T15:04:05.000GMT")
+}
+
+// MergeByKey merges two slices of the same type into one.
+// If an element exists in both slices (same key), the element from `preferred` wins.
+// Memory notes:
+// - Allocates exactly one output slice with capacity len(preferred)+len(other)
+// - Allocates one map sized to len(other) (only items inserted from `other`)
+func MergeByKey[T any](preferred []T, other []T, keyFn func(T) string) []T {
+
+	merged := make([]T, 0, len(preferred)+len(other))
+	index := make(map[string]int, len(other))
+
+	for _, v := range other {
+		k := keyFn(v)
+		if k == "" {
+			continue
+		}
+		index[k] = len(merged)
+		merged = append(merged, v)
+	}
+
+	for _, v := range preferred {
+		k := keyFn(v)
+		if k == "" {
+			continue
+		}
+		if i, ok := index[k]; ok {
+			merged[i] = v
+			continue
+		}
+		merged = append(merged, v)
+	}
+
+	return merged
 }

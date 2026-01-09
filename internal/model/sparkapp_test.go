@@ -24,15 +24,15 @@ import (
 func TestIsRunning(t *testing.T) {
 	tests := []struct {
 		name     string
-		app      HistorySparkApp
+		app      SparkApp
 		expected bool
 	}{
 		{
 			name: "Running application (Completed false)",
-			app: HistorySparkApp{
+			app: SparkApp{
 				ID:   "spark-123",
 				Name: "TestApp",
-				Attempts: []HistorySparkAppAttempt{
+				Attempts: []SparkAppAttempt{
 					{Completed: false},
 				},
 			},
@@ -40,10 +40,10 @@ func TestIsRunning(t *testing.T) {
 		},
 		{
 			name: "Running application (Duration 0)",
-			app: HistorySparkApp{
+			app: SparkApp{
 				ID:   "spark-456",
 				Name: "TestApp",
-				Attempts: []HistorySparkAppAttempt{
+				Attempts: []SparkAppAttempt{
 					{Completed: true, Duration: 0},
 				},
 			},
@@ -51,10 +51,10 @@ func TestIsRunning(t *testing.T) {
 		},
 		{
 			name: "Running application (EndTimeEpoch -1)",
-			app: HistorySparkApp{
+			app: SparkApp{
 				ID:   "spark-789",
 				Name: "TestApp",
-				Attempts: []HistorySparkAppAttempt{
+				Attempts: []SparkAppAttempt{
 					{Completed: true, Duration: 100, EndTimeEpoch: -1},
 				},
 			},
@@ -62,10 +62,10 @@ func TestIsRunning(t *testing.T) {
 		},
 		{
 			name: "Completed application",
-			app: HistorySparkApp{
+			app: SparkApp{
 				ID:   "spark-999",
 				Name: "TestApp",
-				Attempts: []HistorySparkAppAttempt{
+				Attempts: []SparkAppAttempt{
 					{Completed: true, Duration: 100, EndTimeEpoch: 1742487647315},
 				},
 			},
@@ -73,10 +73,10 @@ func TestIsRunning(t *testing.T) {
 		},
 		{
 			name: "No attempts",
-			app: HistorySparkApp{
+			app: SparkApp{
 				ID:       "spark-000",
 				Name:     "TestApp",
-				Attempts: []HistorySparkAppAttempt{},
+				Attempts: []SparkAppAttempt{},
 			},
 			expected: false,
 		},

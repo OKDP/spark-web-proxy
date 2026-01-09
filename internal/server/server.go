@@ -57,19 +57,46 @@ func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {
 	r.Use(security.HTTPSecurity(config.Security)...)
 
 	// Spark UI
-	sparkui := controllers.NewSparkUIController(config)
-	sparkhistory := controllers.NewSparkkHistoryController(config)
+	sparkUI := controllers.NewSparkUIController(config)
+	sparkHistory := controllers.NewSparkHistoryController(config)
+	sparkApps := controllers.NewSparkAppsController(config)
+
 	// Spark UI Handler
-	r.Any(fmt.Sprintf("%s/:appID/*path", config.Spark.UI.ProxyBase), sparkui.HandleLiveApp)
+	r.Any(fmt.Sprintf("%s/:appID/*path", config.Spark.UI.ProxyBase), sparkUI.HandleRunningApp)
+
 	// Spark history Handlers
-	r.Any("/history/:appID/*path", sparkhistory.HandleHistoryApp)
-	r.Any("/static/*path", sparkhistory.HandleDefault)
-	r.Any("/api/v1/applications", sparkhistory.HandleDefault)
-	r.Any("/api/v1/applications/*path", sparkhistory.HandleDefault)
-	r.Any("/history/", sparkhistory.HandleDefault)
-	r.Any("/home/", sparkhistory.HandleDefault)
-	r.Any("/jobs/", sparkhistory.HandleDefault)
-	r.Any("/", sparkhistory.HandleDefault)
+	r.Any("/history/:appID/*path", sparkHistory.HandleHistoryApp)
+	r.Any("/static/*path", sparkHistory.HandleDefault)
+	r.Any("/api/v1/applications", func(c *gin.Context) {
+		if c.Query("status") == "running" {
+			sparkApps.HandleIncompleteApplications(c)
+			return
+		}
+		sparkHistory.HandleDefault(c)
+	})
+	r.Any("/api/v1/applications/*path", sparkHistory.HandleDefault)
+	r.Any("/history/", sparkHistory.HandleDefault)
+	r.Any("/home/", func(c *gin.Context) {
+		if c.Query("showIncomplete") == constants.True {
+			sparkHistory.HandleIncompleteApps(c)
+			return
+		}
+		sparkHistory.HandleDefault(c)
+	})
+	r.Any("/jobs/", func(c *gin.Context) {
+		if c.Query("showIncomplete") == constants.True {
+			sparkHistory.HandleIncompleteApps(c)
+			return
+		}
+		sparkHistory.HandleDefault(c)
+	})
+	r.Any("/", func(c *gin.Context) {
+		if c.Query("showIncomplete") == constants.True {
+			sparkHistory.HandleIncompleteApps(c)
+			return
+		}
+		sparkHistory.HandleDefault(c)
+	})
 
 	r.GET(constants.HealthzURI, controllers.Healthz)
 	r.GET(constants.ReadinessURI, controllers.Readiness)

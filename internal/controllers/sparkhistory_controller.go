@@ -32,14 +32,14 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/spark"
 )
 
-type SparkkHistoryController struct {
+type SparkHistoryController struct {
 	sparkHistoryBaseURL string
 	sparkHistoryBase    string
 	sparkUIProxyBase    string
 }
 
-func NewSparkkHistoryController(config *config.ApplicationConfig) *SparkkHistoryController {
-	controller := &SparkkHistoryController{
+func NewSparkHistoryController(config *config.ApplicationConfig) *SparkHistoryController {
+	controller := &SparkHistoryController{
 		sparkHistoryBaseURL: config.GetSparkHistoryBaseURL(),
 		sparkHistoryBase:    constants.SparkHistoryBase,
 		sparkUIProxyBase:    strings.TrimSpace(config.Spark.UI.ProxyBase),
@@ -49,7 +49,7 @@ func NewSparkkHistoryController(config *config.ApplicationConfig) *SparkkHistory
 	return controller
 }
 
-func (r SparkkHistoryController) HandleHistoryApp(c *gin.Context) {
+func (r SparkHistoryController) HandleHistoryApp(c *gin.Context) {
 
 	appID := c.Param("appID")
 	jobPath := c.Param("path")
@@ -83,19 +83,29 @@ func (r SparkkHistoryController) HandleHistoryApp(c *gin.Context) {
 	spark.ServeSparkHistory(c, upstreamURL, appID)
 }
 
-func (r SparkkHistoryController) HandleDefault(c *gin.Context) {
+func (r SparkHistoryController) HandleDefault(c *gin.Context) {
+	r.serveSparkHistory(c, spark.ServeSparkHistory)
+}
+
+func (r SparkHistoryController) HandleIncompleteApps(c *gin.Context) {
+	r.serveSparkHistory(c, spark.ServeSparkHistoryIncompleteApps)
+}
+
+func (r SparkHistoryController) serveSparkHistory(c *gin.Context, serve func(*gin.Context, *url.URL, string)) {
 	path := c.Request.URL.Path
 
-	upstreamURL, err := url.Parse(fmt.Sprintf("%s%s", r.sparkHistoryBaseURL, path))
+	upstreamURL, err := url.Parse(r.sparkHistoryBaseURL + path)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid upstream URL: %s", upstreamURL)})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Invalid upstream URL: %s", r.sparkHistoryBaseURL+path),
+		})
 		return
 	}
 
-	spark.ServeSparkHistory(c, upstreamURL, "")
+	serve(c, upstreamURL, "")
 }
 
-func (r SparkkHistoryController) redirectToSparkUI(c *gin.Context, appID string) {
+func (r SparkHistoryController) redirectToSparkUI(c *gin.Context, appID string) {
 	c.Request.URL.Path = fmt.Sprintf("%s/%s/jobs/", r.sparkUIProxyBase, appID)
 	log.Debug("The application '%s' is running, redirect to spark ui '%s'", appID, c.Request.URL.String())
 	c.Redirect(http.StatusFound, c.Request.URL.String())

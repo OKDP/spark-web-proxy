@@ -51,14 +51,11 @@ func (c DefaultSparkHandler) ModifyRequest(upstreamURL *url.URL) func(*http.Requ
 		upstreamURL.RawQuery = req.URL.RawQuery
 		upstreamURL.RawFragment = req.URL.RawFragment
 		req.URL = upstreamURL
-		// log.Debug("Request Method: %s, URL: %s, Host: %s, Headers: %v", req.Method, req.URL.String(), req.Host, req.Header)
 	}
 }
 
 func (c DefaultSparkHandler) ModifyResponse() func(*http.Response) error {
 	return func(resp *http.Response) error {
-		resp.TransferEncoding = []string{"identity"}
-		// log.Debug("Response Status: %d, Headers: %v", resp.StatusCode, resp.Header)
 		if resp.StatusCode == http.StatusFound {
 			location := resp.Header.Get("Location")
 			if location == "" {
@@ -67,7 +64,7 @@ func (c DefaultSparkHandler) ModifyResponse() func(*http.Response) error {
 			}
 			parsedURL, err := url.Parse(location)
 			if err != nil {
-				log.Error("Error parsing Location URL: %v", err)
+				log.Error("Error parsing Location URL: %+v", err)
 				return nil
 			}
 
@@ -78,6 +75,7 @@ func (c DefaultSparkHandler) ModifyResponse() func(*http.Response) error {
 			resp.Header.Set("Location", newLocation)
 
 			log.Debug("Rewritten Location Header: %s", newLocation)
+			return nil
 		}
 
 		return nil

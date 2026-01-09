@@ -20,12 +20,13 @@ import (
 	"sync"
 )
 
-type CachedSparkApp struct {
-	BaseURL   string
-	PodName   string
-	AppID     string
-	Namespace string
-	Status    string
+type SparkAppInstance struct {
+	BaseURL        string
+	PodName        string
+	AppID          string
+	Namespace      string
+	Status         string
+	StartTimeEpoch int64
 }
 
 // SparkAppsStore holds a concurrent map of Spark applications, keyed by appId.
@@ -35,16 +36,16 @@ var (
 	}{}
 )
 
-func (app CachedSparkApp) IsRunning() bool {
+func (app SparkAppInstance) IsRunning() bool {
 	return app.Status == string(AppRunning)
 }
 
-func (app CachedSparkApp) IsCompleted() bool {
+func (app SparkAppInstance) IsCompleted() bool {
 	return !app.IsRunning()
 }
 
 // AddOrUpdateSparkApp adds a new SparkApp to the map or updates an existing one
-func AddOrUpdateSparkApp(app *CachedSparkApp) {
+func AddOrUpdateSparkApp(app *SparkAppInstance) {
 	SparkAppsStore.Instances.Store(app.AppID, app)
 }
 
@@ -54,7 +55,7 @@ func MakeSparkAppCompleted(appID string) {
 	if found {
 		app.Status = string(AppUnknown)
 	} else {
-		app = &CachedSparkApp{
+		app = &SparkAppInstance{
 			AppID:  appID,
 			Status: string(AppUnknown),
 		}
@@ -86,12 +87,12 @@ func DeleteSparkApp(appID string) {
 //	if found {
 //	    fmt.Println("Deleted SparkApp:", deletedApp)
 //	}
-func DeleteSparkAppByName(podName string) (*CachedSparkApp, bool) {
-	var deletedApp *CachedSparkApp
+func DeleteSparkAppByName(podName string) (*SparkAppInstance, bool) {
+	var deletedApp *SparkAppInstance
 	var found bool
 
 	SparkAppsStore.Instances.Range(func(key, value interface{}) bool {
-		if app, ok := value.(*CachedSparkApp); ok && app.PodName == podName {
+		if app, ok := value.(*SparkAppInstance); ok && app.PodName == podName {
 			deletedApp = app
 			found = true
 			SparkAppsStore.Instances.Delete(key)
@@ -104,20 +105,21 @@ func DeleteSparkAppByName(podName string) (*CachedSparkApp, bool) {
 }
 
 // Get retrieves a SparkApp from the map by appID
-func GetSparkApp(appID string) (*CachedSparkApp, bool) {
+func GetSparkApp(appID string) (*SparkAppInstance, bool) {
 	value, exists := SparkAppsStore.Instances.Load(appID)
 	if exists {
-		return value.(*CachedSparkApp), exists
+		return value.(*SparkAppInstance), exists
 	}
-	return &CachedSparkApp{}, false
+	return &SparkAppInstance{}, false
 }
 
-// ListSparkApps retrieves all SparkApps from the map
-func ListSparkApps() []*CachedSparkApp {
-	var apps []*CachedSparkApp
+// GetRunningSparkApps retrieves all SparkApps from the map
+func GetRunningSparkApps() []*SparkAppInstance {
+	apps := make([]*SparkAppInstance, 0)
 	SparkAppsStore.Instances.Range(func(_, value interface{}) bool {
-		if app, ok := value.(CachedSparkApp); ok {
-			apps = append(apps, &app)
+		app := value.(*SparkAppInstance)
+		if app != nil && app.IsRunning() {
+			apps = append(apps, app)
 		}
 		return true
 	})
@@ -143,8 +145,8 @@ func ListSparkApps() []*CachedSparkApp {
 //	}
 //	value, found := response.GetProperty("spark.app.id")
 //	fmt.Println(value, found) // Output: "spark-xyz123 true"
-func (r HistorySparkAppEnvironment) GetProperty(propertyName string) (string, bool) {
-	for _, property := range r.SparkProperties {
+func (app SparkAppEnvironment) GetProperty(propertyName string) (string, bool) {
+	for _, property := range app.SparkProperties {
 		if property[0] == propertyName {
 			return property[1], true
 		}
