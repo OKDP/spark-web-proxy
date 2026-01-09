@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+// Package controllers provides HTTP handlers for Spark Web Proxy endpoints.
 package controllers
 
 import (
@@ -32,12 +33,15 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/spark"
 )
 
+// SparkHistoryController handles requests that are routed to the Spark History Server
+// and manages redirects to the Spark UI when an application is still running.
 type SparkHistoryController struct {
 	sparkHistoryBaseURL string
 	sparkHistoryBase    string
 	sparkUIProxyBase    string
 }
 
+// NewSparkHistoryController creates a SparkHistoryController using the application configuration.
 func NewSparkHistoryController(config *config.ApplicationConfig) *SparkHistoryController {
 	controller := &SparkHistoryController{
 		sparkHistoryBaseURL: config.GetSparkHistoryBaseURL(),
@@ -49,6 +53,9 @@ func NewSparkHistoryController(config *config.ApplicationConfig) *SparkHistoryCo
 	return controller
 }
 
+// HandleHistoryApp handles Spark History application routes (e.g. /history/:appID/*path).
+// If the application is still running, it redirects to the Spark UI; otherwise it
+// proxies the request to the Spark History Server.
 func (r SparkHistoryController) HandleHistoryApp(c *gin.Context) {
 
 	appID := c.Param("appID")
@@ -83,14 +90,19 @@ func (r SparkHistoryController) HandleHistoryApp(c *gin.Context) {
 	spark.ServeSparkHistory(c, upstreamURL, appID)
 }
 
+// HandleDefault proxies non-application Spark History routes to the Spark History Server.
 func (r SparkHistoryController) HandleDefault(c *gin.Context) {
 	r.serveSparkHistory(c, spark.ServeSparkHistory)
 }
 
+// HandleIncompleteApps proxies Spark History routes and injects content for the
+// "incomplete applications" pages when applicable.
 func (r SparkHistoryController) HandleIncompleteApps(c *gin.Context) {
 	r.serveSparkHistory(c, spark.ServeSparkHistoryIncompleteApps)
 }
 
+// serveSparkHistory proxies the current request path to the Spark History Server
+// using the provided serve function.
 func (r SparkHistoryController) serveSparkHistory(c *gin.Context, serve func(*gin.Context, *url.URL, string)) {
 	path := c.Request.URL.Path
 
@@ -105,6 +117,7 @@ func (r SparkHistoryController) serveSparkHistory(c *gin.Context, serve func(*gi
 	serve(c, upstreamURL, "")
 }
 
+// redirectToSparkUI redirects the client to the proxied Spark UI jobs page for the given app ID.
 func (r SparkHistoryController) redirectToSparkUI(c *gin.Context, appID string) {
 	c.Request.URL.Path = fmt.Sprintf("%s/%s/jobs/", r.sparkUIProxyBase, appID)
 	log.Debug("The application '%s' is running, redirect to spark ui '%s'", appID, c.Request.URL.String())

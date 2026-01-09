@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+// Package cmd defines the CLI entrypoints and command configuration.
 package cmd
 
 import (
@@ -26,6 +27,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// RootCmd is the root CLI command for spark-web-proxy.
 var RootCmd = &cobra.Command{
 	Use:   "spark-web-proxy",
 	Short: "Spark UI Proxy",
@@ -64,12 +66,14 @@ func init() {
 	}
 }
 
+// Execute runs the root command and exits with a non-zero status on failure.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		os.Exit(2)
 	}
 }
 
+// runSparkUIController starts the Spark Web Proxy server using the loaded configuration.
 func runSparkUIController(_ *cobra.Command, _ []string) {
 	config := config.GetAppConfig()
 	log.SetupGlobalLogger(config.Logging)

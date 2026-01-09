@@ -14,16 +14,19 @@
  *    limitations under the License.
  */
 
+// Package model defines domain models used across the application.
 package model
 
 // SparkApp represents the structure of a Spark application info JSON response.
+// SparkApp represents a Spark application as returned by the Spark
+// History Server REST API.
 type SparkApp struct {
 	ID       string            `json:"id,omitempty"`
 	Name     string            `json:"name,omitempty"`
 	Attempts []SparkAppAttempt `json:"attempts,omitempty"`
 }
 
-// SparkAppAttempt represents each attempt of the Spark application.
+// SparkAppAttempt represents a single execution attempt of a Spark application.
 type SparkAppAttempt struct {
 	StartTime        string `json:"startTime,omitempty"`
 	EndTime          string `json:"endTime,omitempty"`

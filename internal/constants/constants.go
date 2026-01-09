@@ -14,12 +14,18 @@
  *    limitations under the License.
  */
 
+// Package constants defines shared constant values used across the application.
 package constants
 
 const (
-	SparkHistoryBase  = "/history"
+	// SparkHistoryBase is the base path for Spark History UI.
+	SparkHistoryBase = "/history"
+	// SparkAppsEndpoint is the Spark History REST endpoint for applications.
 	SparkAppsEndpoint = "/api/v1/applications"
-	HealthzURI        = "/healthz"
-	ReadinessURI      = "/readiness"
-	True              = "true"
+	// HealthzURI is the liveness probe endpoint.
+	HealthzURI = "/healthz"
+	// ReadinessURI is the readiness probe endpoint.
+	ReadinessURI = "/readiness"
+	// True represents the string value "true".
+	True = "true"
 )

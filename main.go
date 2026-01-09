@@ -14,12 +14,14 @@
  *    limitations under the License.
  */
 
+// Package main is the entry point of the spark-web-proxy application.
 package main
 
 import (
 	"github.com/okdp/spark-web-proxy/cmd"
 )
 
+// main executes the root command of the Spark Web Proxy CLI.
 func main() {
 	cmd.Execute()
 }

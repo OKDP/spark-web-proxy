@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+// Package controllers provides HTTP handlers for Spark Web Proxy endpoints.
 package controllers
 
 import (
@@ -29,10 +30,12 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/utils"
 )
 
+// SparkAppsController handles requests related to Spark applications.
 type SparkAppsController struct {
 	sparkHistoryBaseURL string
 }
 
+// NewSparkAppsController creates a SparkAppsController using the application configuration.
 func NewSparkAppsController(config *config.ApplicationConfig) *SparkAppsController {
 	return &SparkAppsController{
 		sparkHistoryBaseURL: config.GetSparkHistoryBaseURL(),

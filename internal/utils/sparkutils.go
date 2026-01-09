@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+// Package utils provides Spark related helper functions used by the application.
 package utils
 
 import (
@@ -21,7 +22,7 @@ import (
 	"time"
 )
 
-// Function to clean the Spark URL job or stage kill path
+// CleanKillURLPath cleans the Spark URL job or stage kill path
 func CleanKillURLPath(path string) string {
 	re := regexp.MustCompile(`(.*)/[^/]+/kill[/]{0,1}(\?.*)?$`)
 	matches := re.FindStringSubmatch(path)

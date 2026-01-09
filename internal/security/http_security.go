@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package security provides HTTP security middleware such as CORS and
+// custom header configuration for the Gin web framework.
 package security
 
 import (
@@ -24,11 +26,15 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/config"
 )
 
+// HTTPSecurity returns a list of Gin middleware handlers that apply
+// security-related settings such as CORS and custom HTTP headers.
 func HTTPSecurity(securityConfig config.Security) []gin.HandlerFunc {
 	var handlers = []gin.HandlerFunc{}
 	return append(handlers, Cors(securityConfig.Cors), Headers(securityConfig.Headers))
 }
 
+// Cors creates a Gin middleware handler that applies CORS configuration
+// based on the provided application settings.
 func Cors(corsConfig config.Cors) gin.HandlerFunc {
 	return cors.New(cors.Config{
 		AllowOrigins:     corsConfig.AllowedOrigins,
@@ -40,6 +46,8 @@ func Cors(corsConfig config.Cors) gin.HandlerFunc {
 	})
 }
 
+// Headers creates a Gin middleware handler that injects custom HTTP
+// headers into every response.
 func Headers(headersConf map[string]string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		for header, value := range headersConf {

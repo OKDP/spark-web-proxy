@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+// Package controllers provides HTTP handlers for Spark Web Proxy endpoints.
 package controllers
 
 import (
@@ -32,12 +33,15 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/spark"
 )
 
+// SparkUIController handles requests routed to running Spark application UIs
+// and redirects completed applications to Spark History.
 type SparkUIController struct {
 	sparkHistoryBaseURL string
 	sparkHistoryBase    string
 	sparkUIProxyBase    string
 }
 
+// NewSparkUIController creates a SparkUIController using the application configuration.
 func NewSparkUIController(config *config.ApplicationConfig) *SparkUIController {
 	return &SparkUIController{
 		sparkHistoryBaseURL: config.GetSparkHistoryBaseURL(),
@@ -46,6 +50,9 @@ func NewSparkUIController(config *config.ApplicationConfig) *SparkUIController {
 	}
 }
 
+// HandleRunningApp handles Spark UI routes for running applications.
+// If the application is completed, the request is redirected to Spark History;
+// otherwise, it is proxied to the live Spark UI.
 func (r SparkUIController) HandleRunningApp(c *gin.Context) {
 	appID := c.Param("appID")
 	sparkAppPath := strings.TrimPrefix(c.Param("path"), "/")
@@ -85,6 +92,8 @@ func (r SparkUIController) HandleRunningApp(c *gin.Context) {
 	spark.ServeSparkUI(c, upstreamURL, appID)
 }
 
+// redirectToSparkHistory redirects the client to the Spark History page
+// for the given application ID.
 func (r SparkUIController) redirectToSparkHistory(c *gin.Context, appID string) {
 	c.Request.URL.Path = strings.ReplaceAll(c.Request.URL.Path, r.sparkUIProxyBase, r.sparkHistoryBase)
 	log.Debug("The application '%s' was completed, redirect to spark history '%s'", appID, c.Request.URL.String())

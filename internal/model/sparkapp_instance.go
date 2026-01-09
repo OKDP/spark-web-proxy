@@ -14,12 +14,15 @@
  *    limitations under the License.
  */
 
+// Package model defines domain models used across the application.
 package model
 
 import (
 	"sync"
 )
 
+// SparkAppInstance represents a running or completed Spark application
+// discovered either from Kubernetes or the Spark History Server.
 type SparkAppInstance struct {
 	BaseURL        string
 	PodName        string
@@ -36,10 +39,13 @@ var (
 	}{}
 )
 
+// IsRunning reports whether the Spark application is currently running.
 func (app SparkAppInstance) IsRunning() bool {
 	return app.Status == string(AppRunning)
 }
 
+// IsCompleted reports whether the Spark application has completed
+// (i.e., it is not in the running state).
 func (app SparkAppInstance) IsCompleted() bool {
 	return !app.IsRunning()
 }
@@ -64,7 +70,7 @@ func MakeSparkAppCompleted(appID string) {
 	SparkAppsStore.Instances.Store(appID, app)
 }
 
-// Delete removes a SparkApp from the map
+// DeleteSparkApp removes a SparkApp from the map
 func DeleteSparkApp(appID string) {
 	SparkAppsStore.Instances.Delete(appID)
 }
@@ -104,7 +110,7 @@ func DeleteSparkAppByName(podName string) (*SparkAppInstance, bool) {
 	return deletedApp, found
 }
 
-// Get retrieves a SparkApp from the map by appID
+// GetSparkApp retrieves a SparkApp from the map by appID
 func GetSparkApp(appID string) (*SparkAppInstance, bool) {
 	value, exists := SparkAppsStore.Instances.Load(appID)
 	if exists {

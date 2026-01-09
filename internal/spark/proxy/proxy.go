@@ -22,11 +22,15 @@ import (
 	"net/url"
 )
 
+// SparkReverseProxy wraps httputil.ReverseProxy and adds Spark-specific
+// context such as the application ID.
 type SparkReverseProxy struct {
 	*httputil.ReverseProxy
 	appID string
 }
 
+// NewSparkReverseProxy creates a new SparkReverseProxy configured with
+// request and response modifiers and a default error handler.
 func NewSparkReverseProxy(c ReverseProxyHandler, upstreamURL *url.URL, appID string) *SparkReverseProxy {
 	proxy := httputil.NewSingleHostReverseProxy(upstreamURL)
 	proxy.Director = c.ModifyRequest(upstreamURL)
@@ -35,11 +39,15 @@ func NewSparkReverseProxy(c ReverseProxyHandler, upstreamURL *url.URL, appID str
 	return &SparkReverseProxy{proxy, appID}
 }
 
+// WithSparkUIErrorHandler configures the proxy to use a Spark UI–specific
+// error handler and returns the updated proxy.
 func (p *SparkReverseProxy) WithSparkUIErrorHandler(fromURL *url.URL) *SparkReverseProxy {
-	p.ReverseProxy.ErrorHandler = SparkUIErrorHandler(fromURL, p.appID)
+	p.ErrorHandler = SparkUIErrorHandler(fromURL, p.appID)
 	return p
 }
 
+// ServeHTTP implements http.Handler by delegating the request handling
+// to the underlying ReverseProxy.
 func (p *SparkReverseProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.ReverseProxy.ServeHTTP(w, r)
 }

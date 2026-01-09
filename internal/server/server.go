@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 
+// Package server provides the HTTP server setup for the Spark Web Proxy.
 package server
 
 import (
@@ -32,6 +33,9 @@ import (
 	"github.com/okdp/spark-web-proxy/internal/security"
 )
 
+// NewSparkUIProxyServer creates and configures the HTTP server for the Spark Web Proxy.
+// It initializes Kubernetes informers, configures the Gin router, and registers routes
+// for Spark UI, Spark History, and health endpoints.
 func NewSparkUIProxyServer(config *config.ApplicationConfig) *http.Server {
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {

@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+// Package logging provides centralized logging configuration and helpers
+// based on zap for the application.
 package logging
 
 import (
@@ -33,6 +35,8 @@ var (
 	once     sync.Once
 )
 
+// SetupGlobalLogger initializes the global zap logger using the provided
+// logging configuration. The logger is initialized only once.
 func SetupGlobalLogger(loggingConf config.Logging) {
 	once.Do(func() {
 
@@ -66,32 +70,38 @@ func SetupGlobalLogger(loggingConf config.Logging) {
 	})
 }
 
-// Logs in 'DEBUG' level according to a format specifier and writes to standard output.
+// Debug logs a message at DEBUG level according to a format specifier
+// and writes it to standard output.
 func Debug(args ...interface{}) {
 	instance.Debugf(args[0].(string), args[1:]...)
 }
 
-// Logs in 'INFO' level according to a format specifier and writes to standard output.
+// Info logs a message at INFO level according to a format specifier
+// and writes it to standard output.
 func Info(args ...interface{}) {
 	instance.Infof(args[0].(string), args[1:]...)
 }
 
-// Logs in 'WARN' level according to a format specifier and writes to standard output.
+// Warn logs a message at WARN level according to a format specifier
+// and writes it to standard output.
 func Warn(args ...interface{}) {
 	instance.Warnf(args[0].(string), args[1:]...)
 }
 
-// Logs in 'ERROR' level according to a format specifier and writes to standard output.
+// Error logs a message at ERROR level according to a format specifier
+// and writes it to standard output.
 func Error(args ...interface{}) {
 	instance.Errorf(args[0].(string), args[1:]...)
 }
 
-// Logs in 'FATAL' level according to a format specifier and writes to standard output.
+// Fatal logs a message at FATAL level according to a format specifier
+// and writes it to standard output.
 func Fatal(args ...interface{}) {
 	instance.Fatalf(args[0].(string), args[1:]...)
 }
 
-// Logs in 'PANIC' level according to a format specifier and panics.
+// Panic logs a message at PANIC level according to a format specifier
+// and panics.
 func Panic(args ...interface{}) {
 	instance.Panicf(args[0].(string), args[1:]...)
 }
