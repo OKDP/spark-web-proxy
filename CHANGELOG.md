@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/OKDP/spark-web-proxy/compare/v0.1.0...v0.2.0) (2026-01-09)
+
+
+### Features
+
+* **history:** show running Spark applications without waiting event logs to be available [#11](https://github.com/OKDP/spark-web-proxy/issues/11) ([1e64fec](https://github.com/OKDP/spark-web-proxy/commit/1e64fec7880e76f1bb9f8c5a1aa16ad14601d1e6))
+
+
+### Refactoring
+
+* refactoring ([1ef542f](https://github.com/OKDP/spark-web-proxy/commit/1ef542faa071f455267b06c297390e73ba9330d7))
+
 ## 0.1.0 (2025-10-17)
 
 
