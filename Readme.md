@@ -104,3 +104,17 @@ conf.set("spark.ui.port", find_available_port())
 The Spark Web Proxy is independent of any specific authentication mechanism. It simply forwards credentials and headers to the running Spark instances without modifying or enforcing authentication itself.
 
 This allows to use the [Spark Authentication Filter](https://github.com/OKDP/okdp-spark-auth-filter) or any other authentication solution to secure both the Spark History Server and Spark Jobs to ensure user authentication and authorization.
+
+## Developing
+
+This project is configured with a Dev Container to provide a consistent development environment.
+
+Before committing, run:
+
+```sh
+make help
+make test
+```
+
+and fix any linter issues if they occur.
+
