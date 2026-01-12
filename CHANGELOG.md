@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.1](https://github.com/OKDP/spark-web-proxy/compare/v0.2.0...v0.2.1) (2026-01-12)
+
+
+### Documentation
+
+* update Readme.md ([73c7637](https://github.com/OKDP/spark-web-proxy/commit/73c76370fc4bfe031a21c0201480a25d615653e1))
+
+
+### Continuous Integration
+
+* release 0.2.1 ([90c4cde](https://github.com/OKDP/spark-web-proxy/commit/90c4cdefb15a53c2a1e58cd9b622254922e204aa))
+
 ## [0.2.0](https://github.com/OKDP/spark-web-proxy/compare/v0.1.0...v0.2.0) (2026-01-09)
 
 
