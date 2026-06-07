@@ -1,61 +1,219 @@
-[![ci](https://github.com/okdp/spark-web-proxy/actions/workflows/ci.yml/badge.svg)](https://github.com/okdp/spark-web-proxy/actions/workflows/ci.yml)
-[![release-please](https://github.com/okdp/spark-web-proxy/actions/workflows/release-please.yml/badge.svg)](https://github.com/okdp/spark-web-proxy/actions/workflows/release-please.yml)
-[![image-rebuild](https://github.com/okdp/spark-web-proxy/actions/workflows/docker-rebuild.yml/badge.svg)](https://github.com/okdp/spark-web-proxy/actions/workflows/docker-rebuild.yml)
+[![ci](https://github.com/OKDP/spark-web-proxy/actions/workflows/ci.yml/badge.svg)](https://github.com/OKDP/spark-web-proxy/actions/workflows/ci.yml)
+[![release-please](https://github.com/OKDP/spark-web-proxy/actions/workflows/release-please.yml/badge.svg)](https://github.com/OKDP/spark-web-proxy/actions/workflows/release-please.yml)
+[![Release](https://img.shields.io/github/v/release/OKDP/spark-web-proxy)](https://github.com/OKDP/spark-web-proxy/releases/latest)
+[![Spark](https://img.shields.io/badge/spark-3.x%20%7C%204.x-blue.svg)](https://spark.apache.org/)
 [![License Apache2](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
+# OKDP Spark Web Proxy
 
-spark-web-proxy acts as a reverse proxy for [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html) and [Spark UI](https://spark.apache.org/docs/latest/web-ui.html). It completes [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html) by seamlessly integrating live (running) Spark applications UIs. The web proxy enables real-time dynamic discovery and monitoring of running spark applications (without delay) alongside completed applications, all within your existing Spark History Server Web UI.
+> A reverse proxy that brings **running** Spark applications into the Spark History Server UI on Kubernetes. Live and completed applications appear side by side, with no waiting for event logs, for data teams running Spark on Kubernetes who want a single place to monitor every application.
 
-The proxy is non-intrusive and independent of any specific version of Spark History Server or Spark. It supports all Spark application deployment modes, including Kubernetes Jobs, Spark Operator, notebooks (Jupyter, etc), etc.
+<p align="center">
+  <img src="docs/assets/spark-history.png" alt="Spark Web Proxy: running and completed Spark applications in one Spark History Server UI" width="760"/>
+</p>
 
-![Spark History](docs/images/spark-history.png)
+---
+
+## What does this project provide?
+
+### Why this project?
+
+The [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html) renders *completed* applications. It can also list *incomplete* (running) ones, but only once their event logs become readable, and on object storage that introduces a real delay: an in-progress event log file stays empty until the application finishes or a rolling threshold (minimum 10&nbsp;MB) is reached. Short or recent jobs are therefore invisible while they run, and their live Spark UIs are unreachable through the History Server.
+
+Within OKDP, Spark is the compute engine and jobs run as pods on Kubernetes; users observe them through the Spark History Server shipped by the OKDP [spark-history-server](https://github.com/OKDP/spark-history-server) chart. Spark Web Proxy is the monitoring entry point that unifies running and completed applications in that same UI: it discovers running drivers from the Kubernetes API, merges them into the History Server view in real time, and proxies each running application to its live Spark UI. It stays authentication-agnostic, so it composes with the [OKDP Spark Auth Filter](https://github.com/OKDP/okdp-spark-auth-filter) (OIDC/OAuth2) or any other auth layer.
+
+### Delivered artifacts
+
+- **Docker image** `quay.io/okdp/spark-web-proxy`: the Go reverse proxy that fronts the Spark History Server, discovers running drivers (cluster, client and notebook modes) and proxies their live Spark UIs.
+- **Helm chart** `oci://quay.io/okdp/charts/spark-web-proxy`: deploys the proxy on Kubernetes with its Service, RBAC (pod discovery) and optional Ingress.
+
+---
+
+## Architecture
+
+<p align="center">
+  <img src="docs/assets/architecture.drawio.png" alt="Spark Web Proxy runtime topology" width="760"/>
+</p>
+
+**Components in the topology:**
+
+- **User / Browser**: reaches Spark monitoring through a single ingress pointing at the proxy (not at the History Server directly).
+- **spark-web-proxy**: serves completed applications and static assets from the History Server, and for running applications proxies to the live driver UI. When an application completes, it stops routing to the (now gone) driver and falls back to the History Server.
+- **Spark History Server**: the upstream server for completed applications and UI assets, reached over its Kubernetes Service (`http`, port `18080` by default).
+- **Spark driver pods**: each running driver exposes a Spark UI on port `4040`. The proxy discovers them via a Kubernetes informer watching pods labelled `spark-role=driver` in the configured namespaces.
+- **Kubernetes API**: source of truth for running drivers; the proxy needs `pods` `list`/`watch` permission in the watched namespaces.
+
+---
 
 ## Requirements
 
-- Kubernetes cluster
-- [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html)
-- [Helm](https://helm.sh/) installed
+- Kubernetes cluster (>= 1.19)
+- [Helm](https://helm.sh/) >= 3
+- A running Spark History Server reachable from the cluster (e.g. the OKDP [spark-history-server](https://github.com/OKDP/spark-history-server) chart), reading event logs from a shared, writable location
+- Spark 3.x or 4.x jobs configured to write event logs to that same location
+- Access to the `quay.io/okdp` registry (public, no authentication required)
 
-> [!NOTE]
-> You can use the following [Spark History Server](https://github.com/OKDP/spark-history-server) helm chart.
-> 
+Known-good baseline: chart `0.1.0` with image `0.2.1`, Helm 3 and Kubernetes `1.30`. This is the version set validated in testing.
+
+> The chart's default `image.tag` (`0.1.0`) predates running-applications support. Use `image.tag=0.2.1` (or later) to get the behaviour described here.
+
+### Toolchain tested
+
+| Tool | Version |
+|------|---------|
+| Kubernetes (Kind) | `1.30.0` |
+| Kind | `0.23.0` |
+| Helm CLI | `3.18.4` |
+| kubectl | `1.33.2` |
+| Docker | `28.2.2` |
+| Spark | `3.5.1` |
+
+---
+
+## Quick Start
+
+Install the proxy against an existing Spark History Server Service, watching the namespaces where Spark drivers run:
+
+```sh
+helm upgrade --install spark-web-proxy oci://quay.io/okdp/charts/spark-web-proxy \
+  --version 0.1.0 \
+  --namespace spark --create-namespace \
+  --set image.tag=0.2.1 \
+  --set configuration.spark.history.service=spark-history-server \
+  --set "configuration.spark.jobNamespaces={spark}"
+```
+
+**Expected result:**
+
+```
+NAME: spark-web-proxy
+LAST DEPLOYED: <timestamp>
+NAMESPACE: spark
+STATUS: deployed
+REVISION: 1
+```
+
+> Replace `0.1.0` with the latest chart version from [Releases](https://github.com/OKDP/spark-web-proxy/releases). Access Spark monitoring through the **Spark Web Proxy** ingress/Service, not the Spark History Server one.
+
+---
 
 ## Installation
 
-To deploy the Spark Web Proxy, refer to helm chart [README](helm/spark-web-proxy/README.md) for customization options and installation guidelines.
+### Step 1: Deploy a Spark History Server
 
-The web proxy can also be deployed as a sidecar container alongside your existing Spark History Server. Ensure to set the property `configuration.spark.service` to `localhost`.
+If you do not already have one, install the OKDP Spark History Server (this creates the `spark-history-server` Service the proxy points at):
 
-In both cases, you need to use the Spark Web Proxy ingress instead of your spark history ingress.
-
-## Spark History and spark jobs Configuration
-
-Both [Spark History and Spark jobs](https://spark.apache.org/docs/latest/monitoring.html) themselves must be configured to log events, and to log them to the same shared, writable directory.
-
-### Spark History:
-
-```console
-spark.history.fs.logDirectory /path/to/the/same/shared/event/logs
+```sh
+helm install spark-history-server oci://quay.io/okdp/charts/spark-history-server \
+  --namespace spark --create-namespace
 ```
 
-### Spark Jobs:
-
-```console
-spark.eventLog.enabled true
-spark.eventLog.dir /path/to/the/same/shared/event/logs
+**Expected result:**
+```
+NAME: spark-history-server
+NAMESPACE: spark
+STATUS: deployed
+REVISION: 1
 ```
 
-### Spark Reverse Proxy Support
+### Step 2: Deploy the proxy
 
-The web proxy supports Spark Reverse Proxy feature for Spark web UIs by enabling the property `spark.ui.reverseProxy=true` in your spark jobs. In that case, the web proxy configuration property `configuration.spark.ui.proxyBase` should be set to `/proxy`
+Create a `values.yaml` pointing at the History Server Service and listing the namespaces where Spark drivers run:
 
-For more configuration properties, refer to [Spark Monitoring](https://spark.apache.org/docs/latest/monitoring.html) configuration page.
+```sh
+cat > values.yaml <<'EOF'
+image:
+  tag: "0.2.1"
+configuration:
+  spark:
+    history:
+      scheme: http
+      service: spark-history-server
+      port: 18080
+    jobNamespaces:
+      - spark
+EOF
 
-## Spark jobs deployment
+helm install spark-web-proxy oci://quay.io/okdp/charts/spark-web-proxy \
+  --version 0.1.0 --namespace spark -f values.yaml
+```
 
-### Cluster mode
+**Expected result:**
+```
+NAME: spark-web-proxy
+NAMESPACE: spark
+STATUS: deployed
+REVISION: 1
+```
 
-In a cluster mode, `no additional configuration` is needed as spark by default adds the label `spark-role: driver` and the `spark-ui` port in the spark driver pods as shown in the following:
+### Step 3: Verify and access
+
+```sh
+kubectl -n spark get pods
+```
+
+**Expected result:**
+```
+NAME                                    READY   STATUS    RESTARTS   AGE
+spark-history-server-...                1/1     Running   0          2m
+spark-web-proxy-...                     1/1     Running   0          1m
+```
+
+Then port-forward the proxy and open it in a browser:
+
+```sh
+kubectl -n spark port-forward svc/spark-web-proxy 4040:4040
+# Visit http://localhost:4040
+```
+
+The proxy can also run as a sidecar next to the History Server container; in that case set `configuration.spark.history.service=localhost`.
+
+### Cleanup
+
+Remove the Helm releases:
+
+```sh
+helm uninstall spark-web-proxy -n spark
+helm uninstall spark-history-server -n spark
+```
+
+If the namespace was created only for this installation, remove it too:
+
+```sh
+kubectl delete namespace spark
+```
+
+---
+
+## Configuration
+
+| Parameter | Description | Default | Required |
+|-----------|-------------|---------|:--------:|
+| `image.tag` | Proxy image tag; use `0.2.1`+ for running-applications support | `0.1.0` | Yes |
+| `configuration.spark.history.service` | Service name of the Spark History Server (`localhost` in sidecar mode) | _none_ | Yes |
+| `configuration.spark.history.scheme` | Scheme used to reach the History Server | `http` | No |
+| `configuration.spark.history.port` | History Server port | `18080` | No |
+| `configuration.spark.jobNamespaces` | Namespaces watched for running Spark drivers | `["default"]` | No |
+| `configuration.spark.ui.proxyBase` | Base path for proxied Spark UIs; set to `/proxy` when jobs run with `spark.ui.reverseProxy=true` | `/sparkui` | No |
+| `configuration.proxy.port` | Port the proxy listens on | `4040` | No |
+| `rbac.create` | Create the `Role`/`RoleBinding` granting `pods` `list`/`watch` | `true` | No |
+
+> For the full Helm chart values reference, see [helm/spark-web-proxy/README.md](helm/spark-web-proxy/README.md).
+
+### Spark jobs deployment
+
+Both the Spark History Server and the Spark jobs must log events to the **same** shared, writable directory:
+
+```properties
+# Spark History Server
+spark.history.fs.logDirectory  /path/to/shared/event/logs
+
+# Spark jobs
+spark.eventLog.enabled         true
+spark.eventLog.dir             /path/to/shared/event/logs
+```
+
+**Cluster mode**: no additional configuration is needed: Spark automatically adds the `spark-role: driver` label and the `spark-ui` (`4040`) port to the driver pods, which is exactly what the proxy discovers:
 
 ```yaml
 apiVersion: v1
@@ -76,16 +234,11 @@ spec:
       protocol: TCP
 ```
 
-### Notebooks and Client mode
-
-In a client mode, the web proxy relies on [/api/v1/applications/[app-id]/environment](https://spark.apache.org/docs/latest/monitoring.html) Spark History Rest API to get the Spark driver IP and UI port and [/api/v1/applications/[app-id]](https://spark.apache.org/docs/latest/monitoring.html) to get the application status.
-
-By default, Spark does not render the property `spark.ui.port` in the environment properties. So, you should set the property during the job submission or using a listener.
-
-Here is an example of how to set the `spark.ui.port` on a jupyter notebook:
+**Notebooks / client mode**: the proxy resolves the live driver UI from the Spark History REST API, which requires `spark.ui.port` to be present in the application environment. Spark does not render it by default, so set it at submission, for example in a Jupyter notebook:
 
 ```python
 import socket
+
 def find_available_port(start_port=4041, max_port=4100):
     """Find the next available port starting from start_port."""
     for port in range(start_port, max_port):
@@ -93,28 +246,50 @@ def find_available_port(start_port=4041, max_port=4100):
             if s.connect_ex(("localhost", port)) != 0:
                 return port
     raise Exception(f"No available ports found in range {start_port}-{max_port}")
-```
 
-```python
 conf.set("spark.ui.port", find_available_port())
 ```
 
-## Authentication
+> When jobs run with `spark.ui.reverseProxy=true`, set `configuration.spark.ui.proxyBase=/proxy`.
 
-The Spark Web Proxy is independent of any specific authentication mechanism. It simply forwards credentials and headers to the running Spark instances without modifying or enforcing authentication itself.
+---
 
-This allows to use the [Spark Authentication Filter](https://github.com/OKDP/okdp-spark-auth-filter) or any other authentication solution to secure both the Spark History Server and Spark Jobs to ensure user authentication and authorization.
+## Components
 
-## Developing
+Artifacts are published to [`quay.io/okdp`](https://quay.io/organization/okdp).
 
-This project is configured with a Dev Container to provide a consistent development environment.
+| Component | Reference | Tag format | Example |
+|-----------|-----------|-----------|---------|
+| Docker image | [`quay.io/okdp/spark-web-proxy`](https://quay.io/repository/okdp/spark-web-proxy) | `<version>` | `quay.io/okdp/spark-web-proxy:0.2.1` |
+| Helm chart | [`quay.io/okdp/charts/spark-web-proxy`](https://quay.io/repository/okdp/charts/spark-web-proxy) | `<version>` | `oci://quay.io/okdp/charts/spark-web-proxy:0.1.0` |
 
-Before committing, run:
+> See [Releases](https://github.com/OKDP/spark-web-proxy/releases) for the full changelog and all available tags. Running-applications support requires image `>= 0.2.0`.
 
-```sh
-make help
-make test
-```
+---
 
-and fix any linter issues if they occur.
+## OKDP Integration
 
+This component is part of the [OKDP Data Platform](https://okdp.io), a cloud-native, open-source data platform for Kubernetes.
+
+Spark Web Proxy is the monitoring front door for Spark on OKDP. It depends on a running Spark History Server (the OKDP [spark-history-server](https://github.com/OKDP/spark-history-server) chart) and on read access to the Kubernetes API for driver-pod discovery. It works with Spark jobs built from [spark-images](https://github.com/OKDP/spark-images), and composes with the [OKDP Spark Auth Filter](https://github.com/OKDP/okdp-spark-auth-filter) to secure both the History Server and the live Spark UIs behind OIDC/OAuth2.
+
+---
+
+## Alternatives
+
+Spark Web Proxy is a good fit when you want running and completed applications in one Spark History Server UI on Kubernetes. Depending on your needs, other approaches may be enough:
+
+| Alternative | When to consider it |
+|---|---|
+| Spark built-in reverse proxy (`spark.ui.reverseProxy=true`) | You only need UI routing through a single endpoint and don't require running apps inside the History Server. Spark Web Proxy can run alongside it with `proxyBase=/proxy`. |
+| Per-driver Ingress/Service or `kubectl port-forward` | You occasionally need direct access to one running driver's UI on port `4040` and don't need a unified view or automatic discovery. |
+| History Server incomplete-applications list alone | No extra component, but running apps only appear after event logs are flushed; the delay this project removes. |
+
+## License
+
+[Apache License 2.0](LICENSE)
+
+---
+
+**Built 🚀 for the OKDP Community**
+<a href="https://okdp.io"><img src="https://okdp.io/logos/okdp-notext.svg" height="20px"/></a>
