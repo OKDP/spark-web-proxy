@@ -26,7 +26,7 @@
 
 The [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html) renders *completed* applications. It can also list *incomplete* (running) ones, but only once their event logs become readable, and on object storage that introduces a real delay: an in-progress event log file stays empty until the application finishes or a rolling threshold (minimum 10&nbsp;MB) is reached. Short or recent jobs are therefore invisible while they run, and their live Spark UIs are unreachable through the History Server.
 
-Within OKDP, Spark is the compute engine and jobs run as pods on Kubernetes; users observe them through the Spark History Server shipped by the OKDP [spark-history-server](https://github.com/OKDP/spark-history-server) chart. Spark Web Proxy is the monitoring entry point that unifies running and completed applications in that same UI: it discovers running drivers from the Kubernetes API, merges them into the History Server view in real time, and proxies each running application to its live Spark UI. It stays authentication-agnostic, so it composes with the [OKDP Spark Auth Filter](https://github.com/OKDP/okdp-spark-auth-filter) (OIDC/OAuth2) or any other auth layer.
+Within OKDP, Spark is the compute engine and jobs run as pods on Kubernetes; users observe them through the Spark History Server shipped by OKDP. Spark Web Proxy is the monitoring entry point that unifies running and completed applications in that same UI: it discovers running drivers from the Kubernetes API, merges them into the History Server view in real time, and proxies each running application to its live Spark UI. It stays authentication-agnostic, so it composes with the OKDP Spark Auth Filter (OIDC/OAuth2) or any other auth layer.
 
 ### Delivered artifacts
 
@@ -275,9 +275,9 @@ Artifacts are published to [`quay.io/okdp`](https://quay.io/organization/okdp).
 
 ## OKDP Integration
 
-This component is part of the [OKDP Data Platform](https://okdp.io), a cloud-native, open-source data platform for Kubernetes.
+This component is part of the OKDP Data Platform, a cloud-native, open-source data platform for Kubernetes.
 
-Spark Web Proxy is the monitoring front door for Spark on OKDP. It depends on a running Spark History Server (the OKDP [spark-history-server](https://github.com/OKDP/spark-history-server) chart) and on read access to the Kubernetes API for driver-pod discovery. It works with Spark jobs built from [spark-images](https://github.com/OKDP/spark-images), and composes with the [OKDP Spark Auth Filter](https://github.com/OKDP/okdp-spark-auth-filter) to secure both the History Server and the live Spark UIs behind OIDC/OAuth2.
+Spark Web Proxy is the monitoring front door for Spark on OKDP. It depends on a running Spark History Server and on read access to the Kubernetes API for driver-pod discovery. It works with the OKDP Spark images, and composes with the OKDP Spark Auth Filter to secure both the History Server and the live Spark UIs behind OIDC/OAuth2.
 
 ---
 
