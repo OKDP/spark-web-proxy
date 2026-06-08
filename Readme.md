@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://okdp.io">
+    <img src="https://okdp.io/logos/okdp-inverted.png" alt="OKDP - Open Kubernetes Data Platform" height="180" />
+  </a>
+</p>
+
 [![ci](https://github.com/OKDP/spark-web-proxy/actions/workflows/ci.yml/badge.svg)](https://github.com/OKDP/spark-web-proxy/actions/workflows/ci.yml)
 [![release-please](https://github.com/OKDP/spark-web-proxy/actions/workflows/release-please.yml/badge.svg)](https://github.com/OKDP/spark-web-proxy/actions/workflows/release-please.yml)
 [![Release](https://img.shields.io/github/v/release/OKDP/spark-web-proxy)](https://github.com/OKDP/spark-web-proxy/releases/latest)
@@ -285,9 +291,9 @@ Spark Web Proxy is a good fit when you want running and completed applications i
 | Per-driver Ingress/Service or `kubectl port-forward` | You occasionally need direct access to one running driver's UI on port `4040` and don't need a unified view or automatic discovery. |
 | History Server incomplete-applications list alone | No extra component, but running apps only appear after event logs are flushed; the delay this project removes. |
 
-## License
+## Contributing & License
 
-[Apache License 2.0](LICENSE)
+Contributions follow the [OKDP contribution guide](https://github.com/OKDP/.github/blob/main/CONTRIBUTING.md). Released under the [Apache License 2.0](LICENSE).
 
 ---
 
