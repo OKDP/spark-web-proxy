@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/OKDP/spark-web-proxy/compare/v0.2.1...v0.2.2) (2026-07-17)
+
+
+### Documentation
+
+* remove PNG architecture diagram ([a561001](https://github.com/OKDP/spark-web-proxy/commit/a561001f90d8cced716c416b405909697f9d1d24))
+* rewrite README following the OKDP README template ([#27](https://github.com/OKDP/spark-web-proxy/issues/27)) ([4596882](https://github.com/OKDP/spark-web-proxy/commit/45968826d8933d3084addd6ee541fd78f9a880ee))
+
 ## [0.2.1](https://github.com/OKDP/spark-web-proxy/compare/v0.2.0...v0.2.1) (2026-01-12)
 
 ### Chore
