@@ -71,7 +71,7 @@ func (c IncompleteAppsHandler) ModifyRequest(upstreamURL *url.URL) func(*http.Re
 
 // ModifyResponse returns a function that rewrites the Spark History incomplete
 // applications page when it contains the "No incomplete applications found!" message.
-func (c IncompleteAppsHandler) ModifyResponse() func(*http.Response) error {
+func (c IncompleteAppsHandler) ModifyResponse(_ *url.URL) func(*http.Response) error {
 	return func(resp *http.Response) error {
 		resp.TransferEncoding = []string{"identity"}
 		// spark.history.ui.maxApplications = math.MaxInt32
