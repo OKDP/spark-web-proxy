@@ -36,7 +36,7 @@ import (
 // request and response processing.
 type ReverseProxyHandler interface {
 	ModifyRequest(upstreamURL *url.URL) func(*http.Request)
-	ModifyResponse() func(*http.Response) error
+	ModifyResponse(upstreamURL *url.URL) func(*http.Response) error
 }
 
 // DefaultErrorHandler returns a function that handles errors by logging the

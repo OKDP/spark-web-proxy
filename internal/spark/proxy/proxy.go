@@ -34,7 +34,7 @@ type SparkReverseProxy struct {
 func NewSparkReverseProxy(c ReverseProxyHandler, upstreamURL *url.URL, appID string) *SparkReverseProxy {
 	proxy := httputil.NewSingleHostReverseProxy(upstreamURL)
 	proxy.Director = c.ModifyRequest(upstreamURL)
-	proxy.ModifyResponse = c.ModifyResponse()
+	proxy.ModifyResponse = c.ModifyResponse(upstreamURL)
 	proxy.ErrorHandler = DefaultErrorHandler(appID)
 	return &SparkReverseProxy{proxy, appID}
 }
